@@ -1,0 +1,19 @@
+# 本番（PostgreSQL）用の任意構成。開発は SQLite を使うため不要。
+# 使う場合: docker compose up -d db で PostgreSQL を起動し、
+# .env の DATABASE_URL を postgresql://... に切り替え、§9 の手順で移行する。
+services:
+  db:
+    image: postgres:16
+    container_name: ess_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ess
+      POSTGRES_PASSWORD: ess
+      POSTGRES_DB: english_circle
+    ports:
+      - "5432:5432"
+    volumes:
+      - ess_pgdata:/var/lib/postgresql/data
+
+volumes:
+  ess_pgdata:

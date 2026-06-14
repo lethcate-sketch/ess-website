@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(foreach \\($c in 'node','npm','npx','python','py','pip','git','docker'\\) { $cmd = Get-Command $c -ErrorAction SilentlyContinue; if \\($cmd\\) { try { $v = & $c --version 2>$null } catch { $v = '\\(version check failed\\)' }; \"{0,-8} {1}\" -f $c, \\($v -join ' '\\) } else { \"{0,-8} NOT FOUND\" -f $c } })",
+      "PowerShell(npm install)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri 'http://localhost:3000' -UseBasicParsing -TimeoutSec 90; \"STATUS $\\($r.StatusCode\\)\"; if \\($r.Content -match 'English Speaking Society' -and $r.Content -match 'ESS'\\) { 'CONTENT_OK: トップ雛形がレンダリングされました' } else { 'CONTENT_CHECK: マーカー不一致' } } catch { \"ERROR: $\\($_.Exception.Message\\)\" })",
+      "mcp__Claude_Preview__preview_start",
+      "PowerShell(& 'C:\\\\ess_website\\\\frontend\\\\node_modules\\\\.bin\\\\tsc.cmd' --noEmit -p 'C:\\\\ess_website\\\\frontend\\\\tsconfig.json' 2>&1; if \\($LASTEXITCODE -eq 0\\) { 'TSC: OK \\(no type errors\\)' } else { \"TSC: exit $LASTEXITCODE\" })",
+      "PowerShell(backend\\\\venv\\\\Scripts\\\\python.exe -c \"import sys; sys.stdout.reconfigure\\(encoding='utf-8'\\); sys.path.insert\\(0,'backend'\\); from app import create_app; from app.extensions import SessionLocal as s; from app.models import ParticipationRequest, ContactInquiry; create_app\\(\\); n1=s.query\\(ParticipationRequest\\).filter_by\\(email='accept@example.com'\\).delete\\(\\); n2=s.query\\(ContactInquiry\\).filter_by\\(email='accept@example.com'\\).delete\\(\\); s.commit\\(\\); print\\('cleaned_participation', n1, 'cleaned_contact', n2\\)\"; Remove-Item 'C:\\\\ess_website\\\\_tmp_accept.ps1' -Force -ErrorAction SilentlyContinue; foreach \\($port in 3000,5000\\){ $c=Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue; if\\($c\\){$c.OwningProcess|Select-Object -Unique|ForEach-Object{try{Stop-Process -Id $_ -Force; \"stopped $port\"}catch{}}}})",
+      "Bash(awk '/^## 9|^## 10|^## 11|^## 12/{p=1} p{print} /^## 13/{p=0}' PROJECT_SPEC.md)",
+      "Bash(xargs head -30)",
+      "Bash(npm -v)",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(docker --version)",
+      "WebFetch(domain:render.com)",
+      "Bash(npx prisma *)",
+      "WebSearch",
+      "Bash(DATABASE_URL=\"postgresql://u:p@localhost:5432/db\" npx prisma generate)",
+      "PowerShell(Get-Process node,next-server -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime,@{n='Cmd';e={\\(Get-CimInstance Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine}} | Format-List)",
+      "Bash(git config *)",
+      "Bash(git init *)",
+      "Bash(git check-ignore *)",
+      "Bash(git add *)",
+      "Bash(awk -F/ '{print $1}')",
+      "Bash(grep -E \"node_modules|/\\\\.env$|^\\\\.env$|venv|dev\\\\.db\")"
+    ]
+  }
+}

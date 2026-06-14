@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // 本番(Render)/開発ともに PostgreSQL に統一（§9参照）
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  nameKana     String?  @map("name_kana")
+  role         String   @default("MEMBER") // MEMBER | ADMIN
+  grade        String?
+  department   String?
+  bio          String?
+  avatarUrl    String?  @map("avatar_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  joinedAt     DateTime @default(now()) @map("joined_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  attendances     Attendance[]
+  surveyResponses EventSurveyResponse[]
+  createdEvents   Event[]               @relation("EventCreatedBy")
+  refreshTokens   RefreshToken[]
+
+  @@map("users")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  type        String   @default("REGULAR") // REGULAR | SPECIAL | SOCIAL | EXTERNAL
+  startAt     DateTime @map("start_at")
+  endAt       DateTime @map("end_at")
+  location    String?
+  capacity    Int?
+  status      String   @default("DRAFT") // DRAFT | PUBLISHED | CLOSED | ARCHIVED
+  isPublic    Boolean  @default(true) @map("is_public")
+  createdById String   @map("created_by_id")
+  createdBy   User     @relation("EventCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  attendances           Attendance[]
+  surveyQuestions       EventSurveyQuestion[]
+  participationRequests ParticipationRequest[]
+
+  @@map("events")
+}
+
+model Attendance {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  eventId     String   @map("event_id")
+  status      String   @default("UNDECIDED") // ATTENDING | ABSENT | UNDECIDED | LATE
+  comment     String?
+  respondedAt DateTime @default(now()) @map("responded_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId])
+  @@map("attendances")
+}
+
+model EventSurveyQuestion {
+  id           String  @id @default(uuid())
+  eventId      String  @map("event_id")
+  questionText String  @map("question_text")
+  inputType    String  @default("TEXT") @map("input_type") // TEXT | SINGLE | MULTI | SCALE
+  options      String? // JSON文字列で選択肢を保持
+  required     Boolean @default(false)
+  orderIndex   Int     @default(0) @map("order_index")
+
+  event     Event                 @relation(fields: [eventId], references: [id])
+  responses EventSurveyResponse[]
+
+  @@map("event_survey_questions")
+}
+
+model EventSurveyResponse {
+  id           String   @id @default(uuid())
+  questionId   String   @map("question_id")
+  userId       String   @map("user_id")
+  answerText   String?  @map("answer_text")
+  answerChoice String?  @map("answer_choice") // JSON文字列で複数選択対応
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  question EventSurveyQuestion @relation(fields: [questionId], references: [id])
+  user     User                @relation(fields: [userId], references: [id])
+
+  @@map("event_survey_responses")
+}
+
+model ParticipationRequest {
+  id        String   @id @default(uuid())
+  eventId   String?  @map("event_id")
+  name      String
+  email     String
+  type      String   @default("TRIAL") // TRIAL | JOIN
+  message   String?
+  status    String   @default("NEW") // NEW | CONTACTED | DONE
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event Event? @relation(fields: [eventId], references: [id])
+
+  @@map("participation_requests")
+}
+
+model ContactInquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("NEW") // NEW | REPLIED | CLOSED
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contact_inquiries")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
+}
+
+model CircleInfo {
+  id        String   @id @default("default") // シングルトン（常に1行）
+  about     String   // 活動内容
+  frequency String   // 活動頻度（例: 毎週○曜・週○回）
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("circle_info")
+}
+
+model KeyMember {
+  id         String   @id @default(uuid())
+  name       String
+  role       String   // サークルリーダー | 副リーダー など（自由文字列）
+  bio        String?
+  avatarUrl  String?  @map("avatar_url")
+  orderIndex Int      @default(0) @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("key_members")
+}
+
+model SiteSetting {
+  id                  String   @id @default("default") // シングルトン（常に1行）
+  registrationEnabled Boolean  @default(false) @map("registration_enabled") // 新規登録の受付 ON/OFF
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
