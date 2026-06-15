@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
@@ -14,6 +14,12 @@ export function LoginForm({ next }: { next?: string }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // 無料プランでは Flask(ess-api) がスリープしていることがあるため、
+  // ログインページ表示時に起こしておく（送信時の待ち時間を短縮）。
+  useEffect(() => {
+    fetch("/api/proxy/health").catch(() => {});
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,6 +74,11 @@ export function LoginForm({ next }: { next?: string }) {
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? "ログイン中..." : "ログイン"}
       </Button>
+      {loading && (
+        <p className="text-center text-xs text-ink-subtle">
+          サーバー起動中の場合、応答まで数十秒かかることがあります…
+        </p>
+      )}
     </form>
   );
 }

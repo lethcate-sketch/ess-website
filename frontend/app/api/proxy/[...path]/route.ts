@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { FLASK_API_BASE_URL } from "@/lib/api";
+import { FLASK_API_BASE_URL, withWakeRetry } from "@/lib/api";
 import { setAuthCookiesOnResponse } from "@/lib/auth";
 import { ACCESS_COOKIE, REFRESH_COOKIE } from "@/lib/cookies";
 
@@ -31,7 +31,8 @@ async function handle(
       cache: "no-store",
     });
 
-  let res = await call(access);
+  // Flask スリープ時(502/503)は起床待ちリトライしてからレスポンスを得る。
+  let res = await withWakeRetry(() => call(access));
   let rotated: { access: string; refresh: string } | null = null;
 
   if (res.status === 401 && refresh) {
