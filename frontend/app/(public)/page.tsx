@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EventCard } from "@/components/events/EventCard";
+import { Photo } from "@/components/ui/Photo";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import {
   ArrowRightIcon,
@@ -11,14 +12,21 @@ import {
   UsersIcon,
 } from "@/components/ui/Icons";
 import { getUpcomingPublishedEvents } from "@/lib/events";
+import { SITE_IMAGES } from "@/lib/siteImages";
 
-// ヒーローの多言語あいさつ（国際性の演出）
+// ヒーロー写真に重ねる多言語あいさつチップ（国際性の演出）
 const GREETINGS = [
-  { text: "Hello", flag: "🇬🇧", className: "left-4 top-8 animate-float" },
-  { text: "こんにちは", flag: "🇯🇵", className: "right-5 top-16 animate-float-slow" },
-  { text: "Bonjour", flag: "🇫🇷", className: "left-8 bottom-20 animate-bob" },
-  { text: "¡Hola!", flag: "🇪🇸", className: "right-8 bottom-10 animate-float" },
-  { text: "你好", flag: "🇨🇳", className: "left-1/2 top-2 animate-float-slow" },
+  { text: "Hello", flag: "🇬🇧", className: "left-4 top-4 animate-float" },
+  { text: "Bonjour", flag: "🇫🇷", className: "left-6 bottom-6 animate-bob" },
+  { text: "こんにちは", flag: "🇯🇵", className: "right-4 bottom-12 animate-float-slow" },
+];
+
+// トップ「活動の様子」ギャラリー
+const GALLERY = [
+  { key: "discussion", label: "Discussion", img: SITE_IMAGES.galleryDiscussion },
+  { key: "speech", label: "Speech", img: SITE_IMAGES.gallerySpeech },
+  { key: "social", label: "交流会", img: SITE_IMAGES.gallerySocial },
+  { key: "drama", label: "Drama", img: SITE_IMAGES.galleryDrama },
 ];
 
 const FEATURES = [
@@ -106,26 +114,29 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* 右: ビジュアルパネル（写真位置 — 角丸 + 影 + フェードイン） */}
-          <div className="animate-fade-in [animation-delay:200ms]">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-4xl bg-sky-gradient shadow-glow ring-1 ring-white/40">
-              {/* 中央の地球 */}
-              <div className="absolute inset-0 grid place-items-center">
-                <GlobeIcon className="h-40 w-40 animate-float-slow text-white/85" />
-              </div>
-              <SparkleIcon className="absolute right-10 top-8 h-8 w-8 animate-bob text-white/80" />
-
-              {/* 多言語あいさつチップ */}
-              {GREETINGS.map((g) => (
-                <span
-                  key={g.text}
-                  className={`absolute ${g.className} inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 font-display text-sm font-semibold text-navy shadow-card backdrop-blur`}
-                >
-                  <span aria-hidden>{g.flag}</span>
-                  {g.text}
-                </span>
-              ))}
-            </div>
+          {/* 右: ヒーロー写真（角丸 + 影 + フェードイン）。多言語あいさつチップを重ねて国際的に。 */}
+          <div className="relative animate-fade-in [animation-delay:200ms]">
+            <Photo
+              src={SITE_IMAGES.hero.src}
+              alt={SITE_IMAGES.hero.alt}
+              gradient
+              className="aspect-[4/3] rounded-4xl shadow-glow ring-1 ring-white/50"
+            />
+            {/* 装飾: 多言語あいさつチップ */}
+            {GREETINGS.map((g) => (
+              <span
+                key={g.text}
+                className={`absolute ${g.className} inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 font-display text-sm font-semibold text-navy shadow-card backdrop-blur`}
+              >
+                <span aria-hidden>{g.flag}</span>
+                {g.text}
+              </span>
+            ))}
+            {/* バッジ */}
+            <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-brand-gradient px-3 py-1.5 font-display text-xs font-semibold text-white shadow-glow">
+              <SparkleIcon className="h-4 w-4" />
+              Weekly
+            </span>
           </div>
         </div>
       </section>
@@ -155,6 +166,33 @@ export default async function HomePage() {
               <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ===== 活動の様子（ギャラリー） ===== */}
+      <section className="bg-white/60 py-16 lg:py-20">
+        <div className="mx-auto max-w-content px-6">
+          <SectionTitle icon={UsersIcon} eyebrow="Gallery" title="活動の様子" />
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {GALLERY.map((g) => (
+              <div
+                key={g.key}
+                className="group overflow-hidden rounded-3xl shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover"
+              >
+                <Photo
+                  src={g.img.src}
+                  alt={g.img.alt}
+                  gradient
+                  className="aspect-square"
+                  overlay={
+                    <span className="absolute bottom-3 left-4 font-display text-base font-bold text-white drop-shadow">
+                      {g.label}
+                    </span>
+                  }
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

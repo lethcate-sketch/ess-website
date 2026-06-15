@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { GlobeIcon } from "@/components/ui/Icons";
+import { LOGO_SRC } from "@/lib/siteImages";
 
 const LINKS = [
   { href: "/about", label: "サークル紹介" },
@@ -20,14 +21,12 @@ export function Footer() {
         <div className="mx-auto max-w-content px-6 py-12">
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-sm">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient font-display text-sm font-extrabold text-white shadow-soft">
-                  E
-                </span>
-                <span className="font-display text-lg font-extrabold tracking-tight text-navy">
-                  ESS
-                </span>
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={LOGO_SRC}
+                alt="ESS English Speaking Society"
+                className="h-11 w-auto"
+              />
               <p className="mt-4 flex items-center gap-2 text-sm leading-relaxed text-ink-muted">
                 <GlobeIcon className="h-4 w-4 shrink-0 text-brand-400" />
                 英語ディスカッションサークル ESS — 世界とつながり、英語で議論する場。

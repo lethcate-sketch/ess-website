@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { LOGO_SRC } from "@/lib/siteImages";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "./LogoutButton";
 
@@ -51,13 +52,13 @@ export function HeaderNav({ isLoggedIn, isAdmin }: Props) {
       )}
     >
       <div className="mx-auto flex max-w-content flex-wrap items-center justify-between gap-3 px-6 py-3">
-        <Link href="/" className="group flex items-center gap-2">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient font-display text-sm font-extrabold text-white shadow-soft transition-transform group-hover:scale-105">
-            E
-          </span>
-          <span className="font-display text-lg font-extrabold tracking-tight text-navy">
-            ESS
-          </span>
+        <Link href="/" className="group flex items-center" aria-label="ESS ホーム">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={LOGO_SRC}
+            alt="ESS English Speaking Society"
+            className="h-10 w-auto transition-transform group-hover:scale-105"
+          />
         </Link>
 
         <nav className="flex flex-wrap items-center gap-1 text-sm">
