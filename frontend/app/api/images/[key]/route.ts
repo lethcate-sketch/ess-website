@@ -10,7 +10,7 @@ import { defaultImage } from "@/lib/siteImages";
  * - ローカルパス / 外部URL はリダイレクト
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { key: string } },
 ) {
   const key = params.key;
@@ -44,11 +44,14 @@ export async function GET(
     });
   }
 
-  // ローカルパス / 外部URL → リダイレクト
+  // ローカルパス / 外部URL → リダイレクト。
+  // 注意: Render の内部 origin は localhost:10000 のため new URL(.., origin) は使わない。
+  // 絶対URL("https://…")はそのまま、ローカルパス("/images/…")は相対のまま返し、
+  // ブラウザ側で公開URL(https://ess-web.onrender.com)に解決させる。
   return new NextResponse(null, {
     status: 307,
     headers: {
-      location: new URL(url, req.nextUrl.origin).toString(),
+      location: url,
       "cache-control": "public, max-age=60",
     },
   });
