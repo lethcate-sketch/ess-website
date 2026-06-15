@@ -2,14 +2,36 @@
 from flask import Blueprint, g, jsonify, request
 
 from ..extensions import SessionLocal
-from ..models import Attendance, ContactInquiry, Event, ParticipationRequest, SiteSetting, User
+from ..models import (
+    Attendance,
+    ContactInquiry,
+    Event,
+    ParticipationRequest,
+    SiteImage,
+    SiteSetting,
+    User,
+)
 from ..models.types import utcnow
-from ..schemas.admin import RoleUpdateIn, SettingsUpdateIn, StatusUpdateIn
+from ..schemas.admin import ImageUpdateIn, RoleUpdateIn, SettingsUpdateIn, StatusUpdateIn
 from ..schemas.serializers import serialize_site_setting, serialize_user
 from ..utils import error_response, validate
 from ..utils.auth import admin_required
 
 bp = Blueprint("admin", __name__, url_prefix="/api/admin")
+
+# 管理画面から差し替え可能な画像キー（公開ページの各スロットに対応）
+ALLOWED_IMAGE_KEYS = {
+    "logo",
+    "hero",
+    "galleryDiscussion",
+    "gallerySpeech",
+    "gallerySocial",
+    "galleryDrama",
+    "aboutCover",
+    "aboutActivity1",
+    "aboutActivity2",
+    "aboutActivity3",
+}
 
 
 def _active_admin_count() -> int:
@@ -128,3 +150,41 @@ def update_settings():
     s.updatedAt = utcnow()
     SessionLocal.commit()
     return jsonify({"settings": serialize_site_setting(s)})
+
+
+# ---------- サイト画像（ロゴ・写真の差し替え） ----------
+@bp.get("/images")
+@admin_required
+def get_images():
+    rows = SessionLocal.query(SiteImage).all()
+    return jsonify({"images": {r.key: r.url for r in rows}})
+
+
+@bp.put("/images/<key>")
+@admin_required
+def put_image(key):
+    if key not in ALLOWED_IMAGE_KEYS:
+        return error_response("INVALID_KEY", "未知の画像キーです。", 400)
+    data, err = validate(ImageUpdateIn, request.get_json(silent=True) or {})
+    if err:
+        return err
+    row = SessionLocal.query(SiteImage).filter_by(key=key).first()
+    if row is None:
+        row = SiteImage(key=key, url=data.url)
+        SessionLocal.add(row)
+    else:
+        row.url = data.url
+        row.updatedAt = utcnow()
+    SessionLocal.commit()
+    return jsonify({"image": {"key": row.key, "url": row.url}})
+
+
+@bp.delete("/images/<key>")
+@admin_required
+def delete_image(key):
+    """画像をデフォルトに戻す（DB の上書きを削除）。"""
+    row = SessionLocal.query(SiteImage).filter_by(key=key).first()
+    if row is not None:
+        SessionLocal.delete(row)
+        SessionLocal.commit()
+    return jsonify({"ok": True})

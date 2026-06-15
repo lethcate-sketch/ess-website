@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { ImageManager } from "@/components/admin/ImageManager";
 import { getAdminStats } from "@/lib/admin";
+import { MANAGED_IMAGES } from "@/lib/siteImages";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "管理ダッシュボード" };
@@ -65,6 +67,18 @@ export default async function DashboardPage() {
           メンバー管理
         </Link>
       </div>
+
+      {/* ===== サイト画像（トップページ）===== */}
+      <section className="mt-14">
+        <h2 className="text-xl font-semibold tracking-tight">サイト画像（トップページ）</h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          ロゴ・トップの写真を差し替えます。ファイルをアップロード（自動で軽量化）するか、画像URLを貼り付けてください。
+          反映には数十秒かかる場合があります。
+        </p>
+        <div className="mt-5">
+          <ImageManager images={MANAGED_IMAGES.home} />
+        </div>
+      </section>
     </main>
   );
 }

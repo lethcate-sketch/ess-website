@@ -1,7 +1,9 @@
 import { AddKeyMemberForm } from "@/components/admin/AddKeyMemberForm";
 import { CircleInfoForm } from "@/components/admin/CircleInfoForm";
+import { ImageManager } from "@/components/admin/ImageManager";
 import { KeyMemberRow } from "@/components/admin/KeyMemberRow";
 import { getCircleInfo, getKeyMembers } from "@/lib/circle";
+import { MANAGED_IMAGES } from "@/lib/siteImages";
 
 export const metadata = { title: "サークル紹介の管理" };
 
@@ -19,6 +21,17 @@ export default async function AdminAboutPage() {
           <CircleInfoForm
             initial={{ about: info?.about ?? "", frequency: info?.frequency ?? "" }}
           />
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-lg font-semibold">ページ画像</h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          「サークル紹介」ページのカバー写真・活動写真を差し替えます。アップロード（自動で軽量化）か
+          URL貼り付けで設定できます。
+        </p>
+        <div className="mt-4">
+          <ImageManager images={MANAGED_IMAGES.about} />
         </div>
       </section>
 

@@ -1,5 +1,5 @@
 """管理者操作の入力バリデーション（§6 👑）。"""
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from ..utils import ALLOWED_VALUES
 
@@ -43,3 +43,9 @@ class ContactStatusIn(BaseModel):
 
 class SettingsUpdateIn(BaseModel):
     registrationEnabled: bool | None = None
+
+
+class ImageUpdateIn(BaseModel):
+    # ローカルパス / 外部URL / data URL（アップロード時）のいずれか。
+    # data URL を許容するため上限は大きめ（約6MB）。
+    url: str = Field(min_length=1, max_length=6_000_000)

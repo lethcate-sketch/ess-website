@@ -8,6 +8,7 @@ from .attendance import Attendance
 from .circle import CircleInfo, KeyMember
 from .event import Event
 from .form import ContactInquiry, ParticipationRequest
+from .image import SiteImage
 from .settings import SiteSetting
 from .survey import EventSurveyQuestion, EventSurveyResponse
 from .user import RefreshToken, User
@@ -25,4 +26,5 @@ __all__ = [
     "CircleInfo",
     "KeyMember",
     "SiteSetting",
+    "SiteImage",
 ]

@@ -167,3 +167,13 @@ model SiteSetting {
 
   @@map("site_settings")
 }
+
+// 管理画面から差し替え可能なサイト画像（ロゴ・写真）。key ごとに1行。
+// url はローカルパス / 外部URL / data URL（アップロード時）のいずれか。未設定ならコード側のデフォルトを使う。
+model SiteImage {
+  key       String   @id // "logo" | "hero" | "galleryDiscussion" | "aboutCover" など
+  url       String // ローカルパス / 外部URL / data URL
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_images")
+}
