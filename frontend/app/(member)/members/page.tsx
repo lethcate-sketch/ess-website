@@ -21,7 +21,7 @@ export default async function MembersPage() {
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-brand-50 ring-2 ring-line">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/avatar/${m.id}`}
+                  src={`/api/avatar/${m.id}?v=${m.updatedAt.getTime()}`}
                   alt={m.name}
                   loading="lazy"
                   className="h-full w-full object-cover"
