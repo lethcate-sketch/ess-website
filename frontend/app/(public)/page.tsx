@@ -1,53 +1,192 @@
 import Link from "next/link";
 
 import { EventCard } from "@/components/events/EventCard";
+import { SectionTitle } from "@/components/ui/SectionTitle";
+import {
+  ArrowRightIcon,
+  CalendarIcon,
+  ChatIcon,
+  GlobeIcon,
+  SparkleIcon,
+  UsersIcon,
+} from "@/components/ui/Icons";
 import { getUpcomingPublishedEvents } from "@/lib/events";
 
+// ヒーローの多言語あいさつ（国際性の演出）
+const GREETINGS = [
+  { text: "Hello", flag: "🇬🇧", className: "left-4 top-8 animate-float" },
+  { text: "こんにちは", flag: "🇯🇵", className: "right-5 top-16 animate-float-slow" },
+  { text: "Bonjour", flag: "🇫🇷", className: "left-8 bottom-20 animate-bob" },
+  { text: "¡Hola!", flag: "🇪🇸", className: "right-8 bottom-10 animate-float" },
+  { text: "你好", flag: "🇨🇳", className: "left-1/2 top-2 animate-float-slow" },
+];
+
+const FEATURES = [
+  {
+    Icon: ChatIcon,
+    title: "英語でディスカッション",
+    body: "テーマに沿って、レベル別の少人数グループで自由に話します。話す力と考える力が自然と育ちます。",
+    chip: "bg-brand-50 text-brand-600 ring-brand-100",
+    card: "bg-brand-50/40",
+  },
+  {
+    Icon: GlobeIcon,
+    title: "国際的な交流",
+    body: "多様なバックグラウンドのメンバーや外部サークルとの交流で、視野と世界が広がります。",
+    chip: "bg-mint-50 text-mint-400 ring-mint-100",
+    card: "bg-mint-50/50",
+  },
+  {
+    Icon: UsersIcon,
+    title: "あたたかいコミュニティ",
+    body: "初参加・見学はいつでも歓迎。英語が得意でなくても大丈夫。まずは雰囲気を見にきてください。",
+    chip: "bg-brand-50 text-brand-600 ring-brand-100",
+    card: "bg-brand-50/40",
+  },
+];
+
 export default async function HomePage() {
-  const events = await getUpcomingPublishedEvents(3);
+  // イベント取得が失敗してもトップ全体を 500 にせず、ヒーローは表示する（堅牢化）。
+  let events: Awaited<ReturnType<typeof getUpcomingPublishedEvents>> = [];
+  try {
+    events = await getUpcomingPublishedEvents(3);
+  } catch (e) {
+    console.error("Failed to load upcoming events:", e);
+  }
 
   return (
-    <main className="mx-auto max-w-content px-6">
-      <section className="py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
-          English Speaking Society
-        </p>
-        <h1 className="mt-4 text-5xl font-semibold tracking-tight">英語で、議論する。</h1>
-        <p className="mt-6 max-w-2xl leading-relaxed text-ink-muted">
-          ESS は、レベルを問わず英語でのディスカッションを楽しむサークルです。定例会・特別企画・外部交流を通じて、
-          話す力と考える力を磨きます。見学・初参加はいつでも歓迎します。
-        </p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link
-            href="/join"
-            className="border border-accent bg-accent px-5 py-2 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover"
-          >
-            見学・参加する
-          </Link>
-          <Link
-            href="/events"
-            className="border border-line px-5 py-2 text-sm font-medium text-ink transition-colors hover:border-ink"
-          >
-            イベントを見る
-          </Link>
+    <main>
+      {/* ===== ヒーロー ===== */}
+      <section className="relative overflow-hidden bg-hero-gradient">
+        {/* 装飾ブロブ */}
+        <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 top-32 h-80 w-80 rounded-full bg-mint-200/50 blur-3xl" />
+
+        <div className="mx-auto grid max-w-content items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:py-28">
+          {/* 左: テキスト */}
+          <div className="animate-fade-in-up">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 font-display text-xs font-semibold uppercase tracking-[0.15em] text-brand-600 shadow-soft ring-1 ring-brand-100 backdrop-blur">
+              <GlobeIcon className="h-4 w-4" />
+              English Speaking Society
+            </span>
+
+            <h1 className="mt-6 animate-bob font-display text-5xl font-extrabold leading-[1.1] tracking-tight text-navy lg:text-6xl">
+              英語で、<span className="text-gradient">世界</span>と
+              <br className="hidden sm:block" />
+              議論しよう。
+            </h1>
+
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-muted">
+              ESS は、レベルを問わず英語でのディスカッションを楽しむサークルです。
+              定例会・特別企画・外部交流を通じて、話す力と考える力を磨きます。
+              見学・初参加はいつでも歓迎します。
+            </p>
+
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <Link
+                href="/join"
+                className="inline-flex items-center gap-2 rounded-full bg-brand-gradient px-7 py-3 font-display text-sm font-semibold text-white shadow-glow transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.04] hover:shadow-card-hover"
+              >
+                見学・参加する
+                <ArrowRightIcon className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/events"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 font-display text-sm font-semibold text-brand-600 shadow-soft ring-1 ring-brand-200 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.03] hover:bg-brand-50"
+              >
+                イベントを見る
+              </Link>
+            </div>
+
+            <div className="mt-8 flex items-center gap-2 text-2xl">
+              <span className="text-sm font-medium text-ink-subtle">話せる言語、ひろがる世界 →</span>
+              <span aria-hidden>🌏</span>
+              <span aria-hidden>💬</span>
+              <span aria-hidden>🤝</span>
+            </div>
+          </div>
+
+          {/* 右: ビジュアルパネル（写真位置 — 角丸 + 影 + フェードイン） */}
+          <div className="animate-fade-in [animation-delay:200ms]">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-4xl bg-sky-gradient shadow-glow ring-1 ring-white/40">
+              {/* 中央の地球 */}
+              <div className="absolute inset-0 grid place-items-center">
+                <GlobeIcon className="h-40 w-40 animate-float-slow text-white/85" />
+              </div>
+              <SparkleIcon className="absolute right-10 top-8 h-8 w-8 animate-bob text-white/80" />
+
+              {/* 多言語あいさつチップ */}
+              {GREETINGS.map((g) => (
+                <span
+                  key={g.text}
+                  className={`absolute ${g.className} inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 font-display text-sm font-semibold text-navy shadow-card backdrop-blur`}
+                >
+                  <span aria-hidden>{g.flag}</span>
+                  {g.text}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="border-t border-line py-16">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-semibold tracking-tight">今後のイベント</h2>
-          <Link href="/events" className="font-mono text-xs text-accent hover:underline">
-            すべて見る →
-          </Link>
+      {/* ===== 特徴 ===== */}
+      <section className="mx-auto max-w-content px-6 py-16 lg:py-20">
+        <SectionTitle
+          icon={SparkleIcon}
+          eyebrow="Why ESS"
+          title="ESS でできること"
+          tone="mint"
+        />
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className={`rounded-3xl border border-line/60 ${f.card} p-7 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-card-hover`}
+            >
+              <span
+                className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${f.chip}`}
+              >
+                <f.Icon className="h-6 w-6" />
+              </span>
+              <h3 className="mt-5 font-display text-lg font-bold text-navy">
+                {f.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.body}</p>
+            </div>
+          ))}
         </div>
+      </section>
+
+      {/* ===== 今後のイベント ===== */}
+      <section className="mx-auto max-w-content px-6 pb-20">
+        <SectionTitle
+          icon={CalendarIcon}
+          eyebrow="Upcoming"
+          title="今後のイベント"
+          action={
+            <Link
+              href="/events"
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-display text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50"
+            >
+              すべて見る
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+          }
+        />
         {events.length > 0 ? (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
         ) : (
-          <p className="mt-8 text-sm text-ink-muted">公開予定のイベントはまだありません。</p>
+          <div className="mt-10 rounded-3xl border border-dashed border-line bg-white/60 p-12 text-center">
+            <ChatIcon className="mx-auto h-10 w-10 text-brand-300" />
+            <p className="mt-3 text-sm text-ink-muted">
+              公開予定のイベントはまだありません。
+            </p>
+          </div>
         )}
       </section>
     </main>

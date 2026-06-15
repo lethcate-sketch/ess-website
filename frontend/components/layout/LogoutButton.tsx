@@ -22,7 +22,7 @@ export function LogoutButton() {
     <button
       onClick={onClick}
       disabled={loading}
-      className="text-ink-muted transition-colors hover:text-ink disabled:opacity-50"
+      className="rounded-full px-3.5 py-1.5 font-medium text-ink-muted transition-all duration-200 hover:bg-brand-50 hover:text-brand-600 disabled:opacity-50"
     >
       ログアウト
     </button>

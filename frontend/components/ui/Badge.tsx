@@ -2,12 +2,15 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type Tone = "neutral" | "accent" | "muted";
+type Tone = "neutral" | "accent" | "brand" | "mint" | "muted";
 
+// pill 型の淡い塗りバッジ（親しみのある配色）
 const TONES: Record<Tone, string> = {
-  neutral: "border-line text-ink",
-  accent: "border-accent text-accent",
-  muted: "border-line text-ink-subtle",
+  neutral: "bg-surface-muted text-ink ring-1 ring-line",
+  accent: "bg-brand-50 text-brand-600 ring-1 ring-brand-100",
+  brand: "bg-brand-50 text-brand-600 ring-1 ring-brand-100",
+  mint: "bg-mint-50 text-mint-400 ring-1 ring-mint-100",
+  muted: "bg-surface-muted text-ink-subtle ring-1 ring-line",
 };
 
 export function Badge({
@@ -22,7 +25,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center border px-2 py-0.5 font-mono text-[11px] uppercase tracking-wide",
+        "inline-flex items-center rounded-full px-3 py-1 font-display text-[11px] font-semibold tracking-wide",
         TONES[tone],
         className,
       )}

@@ -8,10 +8,47 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-surface text-ink antialiased;
+  @apply bg-canvas text-ink antialiased;
 }
 
-/* 直線的・ミニマル方針: 角丸はコンポーネント側で rounded-none / rounded-sm を明示して使う。 */
+/* 見出しは Poppins(+Noto Sans JP) を既定にする（本文 Inter とメリハリ）。 */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-poppins), var(--font-noto-jp), ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+::selection {
+  background-color: #aedbff;
+  color: #003b70;
+}
+
+@layer utilities {
+  /* ブランドのグラデーション文字 */
+  .text-gradient {
+    @apply bg-gradient-to-r from-brand-500 via-brand to-mint-400 bg-clip-text text-transparent;
+  }
+
+  /* セクションを区切る淡いグラデの上罫 */
+  .border-gradient-top {
+    border-image: linear-gradient(90deg, #3ba7ff, #a8f1d0) 1;
+  }
+}
+
+/* アニメーションは prefers-reduced-motion を尊重して無効化 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
