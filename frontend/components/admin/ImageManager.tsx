@@ -3,45 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { fileToCompressedDataUrl } from "@/lib/imageCompress";
 import type { ManagedImage } from "@/lib/siteImages";
-
-/**
- * 画像をブラウザ側でリサイズ・圧縮して data URL 化する。
- * 大きな写真でも DB/通信が重くならないよう、最大辺 1600px・JPEG 品質 0.85 に変換。
- * ロゴ等は透過を保つため PNG（無圧縮）で出力。
- */
-async function fileToDataUrl(
-  file: File,
-  format: "png" | "jpeg" = "jpeg",
-  maxDim = 1600,
-): Promise<string> {
-  const readDataUrl = (f: File) =>
-    new Promise<string>((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result as string);
-      r.onerror = () => reject(new Error("read failed"));
-      r.readAsDataURL(f);
-    });
-
-  const original = await readDataUrl(file);
-  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const im = new Image();
-    im.onload = () => resolve(im);
-    im.onerror = () => reject(new Error("decode failed"));
-    im.src = original;
-  });
-
-  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-  const w = Math.max(1, Math.round(img.width * scale));
-  const h = Math.max(1, Math.round(img.height * scale));
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return original;
-  ctx.drawImage(img, 0, 0, w, h);
-  return canvas.toDataURL(format === "png" ? "image/png" : "image/jpeg", 0.85);
-}
 
 function ImageRow({ image }: { image: ManagedImage }) {
   const router = useRouter();
@@ -80,7 +43,9 @@ function ImageRow({ image }: { image: ManagedImage }) {
     if (!f) return;
     setBusy(true);
     try {
-      const dataUrl = await fileToDataUrl(f, image.format ?? "jpeg");
+      const dataUrl = await fileToCompressedDataUrl(f, {
+        format: image.format ?? "jpeg",
+      });
       await send("PUT", { url: dataUrl });
     } catch {
       window.alert("画像の読み込みに失敗しました。");

@@ -11,4 +11,5 @@ class MeUpdateIn(BaseModel):
     grade: str | None = Field(default=None, max_length=50)
     department: str | None = Field(default=None, max_length=100)
     bio: str | None = Field(default=None, max_length=2000)
-    avatarUrl: str | None = Field(default=None, max_length=500)
+    # アップロード画像は data URL で保存するため上限を大きめに（約3MB）。URL/空文字も可。
+    avatarUrl: str | None = Field(default=None, max_length=3_000_000)

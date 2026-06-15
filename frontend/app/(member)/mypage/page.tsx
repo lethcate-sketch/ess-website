@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ProfileForm } from "@/components/forms/ProfileForm";
 import { Badge } from "@/components/ui/Badge";
 import { DateTime } from "@/components/ui/DateTime";
+import { UserIcon } from "@/components/ui/Icons";
 import { getSession } from "@/lib/auth";
 import { ATTENDANCE_STATUS_LABEL } from "@/lib/labels";
 import { getUserAttendance, getUserById } from "@/lib/members";
@@ -19,11 +20,31 @@ export default async function MyPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">マイページ</h1>
-      <p className="mt-2 font-mono text-sm text-ink-muted">
-        {user.email}
-        {user.role === "ADMIN" ? " ・ 管理者" : ""}
-      </p>
+      <div className="flex items-center gap-4">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-brand-50 ring-2 ring-line">
+          {user.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-brand-300">
+              <UserIcon className="h-8 w-8" />
+            </span>
+          )}
+        </div>
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-navy">
+            マイページ
+          </h1>
+          <p className="mt-1 text-sm text-ink-muted">
+            {user.email}
+            {user.role === "ADMIN" ? " ・ 管理者" : ""}
+          </p>
+        </div>
+      </div>
 
       <section className="mt-10">
         <h2 className="text-lg font-semibold">登録情報の変更</h2>
