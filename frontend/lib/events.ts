@@ -15,6 +15,21 @@ export async function getUpcomingPublishedEvents(limit?: number) {
   });
 }
 
+/**
+ * 指定期間に開始する公開イベント（カレンダー用）。
+ * 終了済みでも当該期間に入るものは含める（DRAFT/非公開は除外）。
+ */
+export async function getPublicEventsInRange(start: Date, end: Date) {
+  return prisma.event.findMany({
+    where: {
+      isPublic: true,
+      status: { not: "DRAFT" },
+      startAt: { gte: start, lt: end },
+    },
+    orderBy: { startAt: "asc" },
+  });
+}
+
 /** 過去（終了済み）の公開イベント。履歴用。 */
 export async function getPastEvents() {
   return prisma.event.findMany({
