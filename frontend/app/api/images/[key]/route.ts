@@ -8,22 +8,37 @@ import { defaultImage } from "@/lib/siteImages";
  * 管理画面で設定した画像（DB の SiteImage）があればそれを、無ければコード側のデフォルトを返す。
  * - data URL（アップロード画像）はデコードしてバイナリ配信
  * - ローカルパス / 外部URL はリダイレクト
+ *
+ * キャッシュ: SiteImage.updatedAt を ETag にして must-revalidate で配信する。
+ * 管理画面で差し替えると updatedAt が進み ETag が変わるため、ヘッダーや公開ページが
+ * `?v=` を付けずに参照していても**即座に新しい画像へ更新**される（未変更時は 304 で軽量）。
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { key: string } },
 ) {
   const key = params.key;
 
   let url: string | undefined;
+  let version = "default"; // SiteImage が無いとき（＝デフォルト画像）の固定バージョン
   try {
     const row = await prisma.siteImage.findUnique({ where: { key } });
-    url = row?.url ?? undefined;
+    if (row) {
+      url = row.url;
+      version = String(row.updatedAt.getTime());
+    }
   } catch {
     // DB 未到達 / テーブル未作成時はデフォルトにフォールバック
   }
   if (!url) url = defaultImage(key);
   if (!url) return new NextResponse("Not found", { status: 404 });
+
+  // 差し替えで updatedAt が進む → ETag が変わる → ブラウザが新画像を取得する。
+  const etag = `"${key}-${version}"`;
+  const cache = { etag, "cache-control": "public, max-age=0, must-revalidate" };
+  if (req.headers.get("if-none-match") === etag) {
+    return new NextResponse(null, { status: 304, headers: cache });
+  }
 
   // data URL（アップロード画像）→ デコードして配信
   if (url.startsWith("data:")) {
@@ -37,10 +52,7 @@ export async function GET(
       ? Buffer.from(raw, "base64")
       : Buffer.from(decodeURIComponent(raw));
     return new NextResponse(body, {
-      headers: {
-        "content-type": contentType,
-        "cache-control": "public, max-age=60",
-      },
+      headers: { "content-type": contentType, ...cache },
     });
   }
 
@@ -50,9 +62,6 @@ export async function GET(
   // ブラウザ側で公開URL(https://ess-web.onrender.com)に解決させる。
   return new NextResponse(null, {
     status: 307,
-    headers: {
-      location: url,
-      "cache-control": "public, max-age=60",
-    },
+    headers: { location: url, ...cache },
   });
 }
