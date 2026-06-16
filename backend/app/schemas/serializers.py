@@ -136,6 +136,7 @@ def serialize_key_member(m) -> dict:
         "role": m.role,
         "bio": m.bio,
         "avatarUrl": m.avatarUrl,
+        "userId": m.userId,
         "orderIndex": m.orderIndex,
         "createdAt": iso(m.createdAt),
         "updatedAt": iso(m.updatedAt),

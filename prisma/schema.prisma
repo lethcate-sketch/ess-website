@@ -153,6 +153,7 @@ model KeyMember {
   role       String   // サークルリーダー | 副リーダー など（自由文字列）
   bio        String?
   avatarUrl  String?  @map("avatar_url")
+  userId     String?  @map("user_id") // 紐づく登録メンバー(User.id)。任意（ソフト参照）
   orderIndex Int      @default(0) @map("order_index")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")

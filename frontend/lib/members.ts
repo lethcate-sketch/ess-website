@@ -14,6 +14,23 @@ export async function getUserById(id: string) {
   return prisma.user.findUnique({ where: { id } });
 }
 
+/**
+ * 指定ユーザーの更新時刻マップ（id -> updatedAt のミリ秒）。
+ * アバター(/api/avatar/:userId)のキャッシュ無効化に使う。User がマイページで
+ * アバターを差し替えると updatedAt が進むため、参照側の `?v=` を即時に更新できる。
+ */
+export async function getUsersUpdatedAtMap(ids: string[]) {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return {} as Record<string, number>;
+  const rows = await prisma.user.findMany({
+    where: { id: { in: unique } },
+    select: { id: true, updatedAt: true },
+  });
+  return Object.fromEntries(
+    rows.map((r) => [r.id, r.updatedAt.getTime()]),
+  ) as Record<string, number>;
+}
+
 export async function getUserAttendance(userId: string) {
   return prisma.attendance.findMany({
     where: { userId },

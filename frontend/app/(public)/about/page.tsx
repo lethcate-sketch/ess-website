@@ -10,12 +10,18 @@ import {
   UsersIcon,
 } from "@/components/ui/Icons";
 import { getCircleInfo, getKeyMembers } from "@/lib/circle";
+import { getUsersUpdatedAtMap } from "@/lib/members";
 import { memberPortrait, SITE_IMAGES } from "@/lib/siteImages";
 
 export const metadata = { title: "サークル紹介" };
 
 export default async function AboutPage() {
   const [info, members] = await Promise.all([getCircleInfo(), getKeyMembers()]);
+  // 紐づくユーザーの updatedAt でアバターのキャッシュを無効化する（KeyMember 側の
+  // updatedAt はユーザーがアバターを変えても進まないため、User の更新時刻を使う）。
+  const linkedUserUpdatedAt = await getUsersUpdatedAtMap(
+    members.map((m) => m.userId).filter((id): id is string => Boolean(id)),
+  );
   const activities = [
     SITE_IMAGES.aboutActivity1,
     SITE_IMAGES.aboutActivity2,
@@ -87,7 +93,13 @@ export default async function AboutPage() {
                   className="group overflow-hidden rounded-3xl border border-line/60 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover"
                 >
                   <Photo
-                    src={memberPortrait(i)}
+                    src={
+                      m.userId
+                        ? `/api/avatar/${m.userId}?v=${
+                            linkedUserUpdatedAt[m.userId] ?? m.updatedAt.getTime()
+                          }`
+                        : memberPortrait(i)
+                    }
                     alt={`${m.name}の写真`}
                     className="aspect-[4/3]"
                   />

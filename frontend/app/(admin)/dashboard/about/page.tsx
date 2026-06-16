@@ -3,12 +3,19 @@ import { CircleInfoForm } from "@/components/admin/CircleInfoForm";
 import { ImageManager } from "@/components/admin/ImageManager";
 import { KeyMemberRow } from "@/components/admin/KeyMemberRow";
 import { getCircleInfo, getKeyMembers } from "@/lib/circle";
+import { getActiveMembers } from "@/lib/members";
 import { MANAGED_IMAGES } from "@/lib/siteImages";
 
 export const metadata = { title: "サークル紹介の管理" };
 
 export default async function AdminAboutPage() {
-  const [info, members] = await Promise.all([getCircleInfo(), getKeyMembers()]);
+  const [info, members, users] = await Promise.all([
+    getCircleInfo(),
+    getKeyMembers(),
+    getActiveMembers(),
+  ]);
+  // プルダウン用の登録メンバー一覧（id と名前のみ。アバター等は渡さない）
+  const memberOptions = users.map((u) => ({ id: u.id, name: u.name }));
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
@@ -41,7 +48,15 @@ export default async function AdminAboutPage() {
           {members.map((m) => (
             <KeyMemberRow
               key={m.id}
-              member={{ id: m.id, name: m.name, role: m.role, bio: m.bio, orderIndex: m.orderIndex }}
+              member={{
+                id: m.id,
+                name: m.name,
+                role: m.role,
+                bio: m.bio,
+                userId: m.userId,
+                orderIndex: m.orderIndex,
+              }}
+              members={memberOptions}
             />
           ))}
           {members.length === 0 && (
@@ -54,7 +69,7 @@ export default async function AdminAboutPage() {
             メンバーを追加
           </h3>
           <div className="mt-3">
-            <AddKeyMemberForm />
+            <AddKeyMemberForm members={memberOptions} />
           </div>
         </div>
       </section>

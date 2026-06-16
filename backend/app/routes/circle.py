@@ -71,6 +71,7 @@ def create_key_member():
         role=data.role,
         bio=data.bio,
         avatarUrl=data.avatarUrl,
+        userId=data.userId,
         orderIndex=data.orderIndex,
     )
     SessionLocal.add(m)

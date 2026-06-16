@@ -28,6 +28,7 @@ class KeyMember(Base):
     role = Column("role", String, nullable=False)  # サークルリーダー | 副リーダー 等（自由文字列）
     bio = Column("bio", String, nullable=True)
     avatarUrl = Column("avatar_url", String, nullable=True)
+    userId = Column("user_id", String, nullable=True)  # 紐づく登録メンバー(User.id)。任意
     orderIndex = Column("order_index", Integer, nullable=False, default=0)
     createdAt = Column("created_at", PrismaDateTime, nullable=False, default=utcnow)
     updatedAt = Column(

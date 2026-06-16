@@ -9,9 +9,14 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 
-const EMPTY = { name: "", role: "", bio: "", orderIndex: "0" };
+type MemberOption = { id: string; name: string };
 
-export function AddKeyMemberForm() {
+const EMPTY = { userId: "", name: "", role: "", bio: "", orderIndex: "0" };
+
+const SELECT_CLASS =
+  "w-full border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-accent";
+
+export function AddKeyMemberForm({ members }: { members: MemberOption[] }) {
   const router = useRouter();
   const [f, setF] = useState({ ...EMPTY });
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +27,18 @@ export function AddKeyMemberForm() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setF((p) => ({ ...p, [k]: e.target.value }));
 
+  function onSelectMember(e: React.ChangeEvent<HTMLSelectElement>) {
+    const id = e.target.value;
+    const u = members.find((m) => m.id === id);
+    setF((p) => ({ ...p, userId: id, name: u?.name ?? "" }));
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!f.userId) {
+      setError("メンバーを選択してください。");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -32,6 +47,7 @@ export function AddKeyMemberForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           name: f.name,
+          userId: f.userId,
           role: f.role,
           bio: f.bio || null,
           orderIndex: Number(f.orderIndex) || 0,
@@ -56,8 +72,23 @@ export function AddKeyMemberForm() {
       <FormError message={error} />
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <Label htmlFor="km-name">氏名</Label>
-          <Input id="km-name" required value={f.name} onChange={set("name")} />
+          <Label htmlFor="km-user">メンバー</Label>
+          <select
+            id="km-user"
+            required
+            value={f.userId}
+            onChange={onSelectMember}
+            className={SELECT_CLASS}
+          >
+            <option value="" disabled>
+              メンバーを選択
+            </option>
+            {members.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <Label htmlFor="km-role">役職（例: 副リーダー）</Label>

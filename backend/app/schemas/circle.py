@@ -12,6 +12,7 @@ class KeyMemberIn(BaseModel):
     role: str = Field(min_length=1, max_length=100)
     bio: str | None = Field(default=None, max_length=2000)
     avatarUrl: str | None = Field(default=None, max_length=500)
+    userId: str | None = Field(default=None, max_length=100)  # 紐づく登録メンバー(User.id)
     orderIndex: int = Field(default=0, ge=0)
 
 
@@ -20,4 +21,5 @@ class KeyMemberUpdateIn(BaseModel):
     role: str | None = Field(default=None, min_length=1, max_length=100)
     bio: str | None = Field(default=None, max_length=2000)
     avatarUrl: str | None = Field(default=None, max_length=500)
+    userId: str | None = Field(default=None, max_length=100)
     orderIndex: int | None = Field(default=None, ge=0)
