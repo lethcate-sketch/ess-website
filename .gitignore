@@ -25,6 +25,8 @@ yarn-error.log*
 *.sqlite3
 prisma/dev.db*
 prisma/*.db
+# ローカル開発用に schema.prisma から派生生成する sqlite スキーマ（真実源ではない）
+prisma/schema.local.prisma
 
 # ===== Python / Flask (backend) =====
 __pycache__/
