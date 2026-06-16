@@ -26,6 +26,8 @@ export const SITE_IMAGES: Record<string, Img> = {
   aboutActivity1: { src: api("aboutActivity1"), alt: "活動写真 1" },
   aboutActivity2: { src: api("aboutActivity2"), alt: "活動写真 2" },
   aboutActivity3: { src: api("aboutActivity3"), alt: "活動写真 3" },
+  scheduleCover: { src: api("scheduleCover"), alt: "活動スケジュールの様子" },
+  eventsCover: { src: api("eventsCover"), alt: "イベントの様子" },
 };
 
 /** 主要メンバーのポートレート（index で割り当て。将来 KeyMember.avatarUrl に統合可）。 */
@@ -57,6 +59,8 @@ export const IMAGE_DEFAULTS: Record<string, string> = {
   aboutActivity1: sample("ess-act1", 800, 600),
   aboutActivity2: sample("ess-act2", 800, 600),
   aboutActivity3: sample("ess-act3", 800, 600),
+  scheduleCover: sample("ess-schedule", 1600, 800),
+  eventsCover: sample("ess-events", 1600, 800),
 };
 
 /** 配信エンドポイント用: key のデフォルト画像URL（無ければ undefined）。 */
@@ -79,7 +83,9 @@ export type ManagedImage = {
 export const MANAGED_IMAGES: { home: ManagedImage[]; about: ManagedImage[] } = {
   home: [
     { key: "logo", label: "ロゴ", format: "png", hint: "背景が透明な PNG を推奨" },
-    { key: "hero", label: "ヒーロー写真（トップ大）" },
+    { key: "hero", label: "ヒーロー写真（トップ大）", hint: "横長の活動写真を推奨" },
+    { key: "scheduleCover", label: "スケジュール: ヒーロー写真", hint: "横長の活動写真を推奨" },
+    { key: "eventsCover", label: "イベント: ヒーロー写真", hint: "横長の活動写真を推奨" },
     { key: "galleryDiscussion", label: "ギャラリー: Discussion" },
     { key: "gallerySpeech", label: "ギャラリー: Speech" },
     { key: "gallerySocial", label: "ギャラリー: 交流会" },

@@ -31,6 +31,8 @@ ALLOWED_IMAGE_KEYS = {
     "aboutActivity1",
     "aboutActivity2",
     "aboutActivity3",
+    "scheduleCover",
+    "eventsCover",
 }
 
 

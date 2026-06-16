@@ -2,10 +2,12 @@ import Link from "next/link";
 
 import { AttendanceControl } from "@/components/events/AttendanceControl";
 import { DateTime } from "@/components/ui/DateTime";
+import { PageHero } from "@/components/ui/PageHero";
 import { getSession } from "@/lib/auth";
 import { getUpcomingPublishedEvents } from "@/lib/events";
 import { EVENT_TYPE_LABEL } from "@/lib/labels";
 import { getUserAttendanceMap } from "@/lib/members";
+import { SITE_IMAGES } from "@/lib/siteImages";
 
 export const metadata = { title: "スケジュール" };
 
@@ -20,14 +22,19 @@ export default async function SchedulePage() {
     : {};
 
   return (
-    <main className="mx-auto max-w-content px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">スケジュール</h1>
-      <p className="mt-2 text-ink-muted">
-        今後の公開イベントの予定です。
-        {session ? "各イベントの出欠を登録できます。" : ""}
-      </p>
+    <main>
+      <PageHero
+        src={SITE_IMAGES.scheduleCover.src}
+        alt={SITE_IMAGES.scheduleCover.alt}
+        eyebrow="Schedule"
+        title="スケジュール"
+        subtitle={`今後の公開イベントの予定です。${
+          session ? "ログイン中は各イベントの出欠を登録できます。" : ""
+        }`}
+      />
 
-      {events.length > 0 ? (
+      <div className="mx-auto max-w-content px-6 py-20 sm:px-10 lg:px-16">
+        {events.length > 0 ? (
         <ul className="mt-8 divide-y divide-line border-y border-line">
           {events.map((event) => (
             <li key={event.id} className="py-4">
@@ -73,6 +80,7 @@ export default async function SchedulePage() {
           すると各イベントに出欠登録ができます。
         </p>
       )}
+      </div>
     </main>
   );
 }

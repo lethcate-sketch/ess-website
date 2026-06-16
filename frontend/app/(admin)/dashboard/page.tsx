@@ -68,12 +68,12 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* ===== サイト画像（トップページ）===== */}
+      {/* ===== サイト画像 ===== */}
       <section className="mt-14">
-        <h2 className="text-xl font-semibold tracking-tight">サイト画像（トップページ）</h2>
+        <h2 className="text-xl font-semibold tracking-tight">サイト画像</h2>
         <p className="mt-1 text-sm text-ink-muted">
-          ロゴ・トップの写真を差し替えます。ファイルをアップロード（自動で軽量化）するか、画像URLを貼り付けてください。
-          反映には数十秒かかる場合があります。
+          ロゴ・トップの写真や、各ページ（スケジュール・イベント）のヒーロー写真を差し替えます。
+          ファイルをアップロード（自動で軽量化）するか、画像URLを貼り付けてください。反映後はページを再読み込みしてください。
         </p>
         <div className="mt-5">
           <ImageManager images={MANAGED_IMAGES.home} />

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PageHero } from "@/components/ui/PageHero";
 import { Photo } from "@/components/ui/Photo";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import {
@@ -30,27 +31,16 @@ export default async function AboutPage() {
 
   return (
     <main>
-      {/* ===== カバー写真 ===== */}
-      <section className="relative">
-        <Photo
-          src={SITE_IMAGES.aboutCover.src}
-          alt={SITE_IMAGES.aboutCover.alt}
-          gradient
-          className="h-64 w-full sm:h-80 lg:h-[26rem]"
-        />
-        <div className="absolute inset-0 flex items-end">
-          <div className="mx-auto w-full max-w-content px-6 pb-8">
-            <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-white/90">
-              About ESS
-            </p>
-            <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-white drop-shadow lg:text-5xl">
-              サークル紹介
-            </h1>
-          </div>
-        </div>
-      </section>
+      {/* ===== ヒーロー（カバー写真） ===== */}
+      <PageHero
+        src={SITE_IMAGES.aboutCover.src}
+        alt={SITE_IMAGES.aboutCover.alt}
+        eyebrow="About ESS"
+        title="サークル紹介"
+        subtitle="活動内容や活動頻度、主要メンバーを紹介します。"
+      />
 
-      <div className="mx-auto max-w-content px-6 py-16">
+      <div className="mx-auto max-w-content px-6 py-20 sm:px-10 lg:px-16">
         {/* ===== 活動内容 / 活動頻度 ===== */}
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-line/60 bg-white p-8 shadow-card">
