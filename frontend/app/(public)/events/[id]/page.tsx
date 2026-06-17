@@ -72,7 +72,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
               出欠登録
             </p>
             <div className="mt-3">
-              <AttendanceControl eventId={event.id} initialStatus={attendance?.status ?? null} />
+              <AttendanceControl
+                eventId={event.id}
+                initialStatus={attendance?.status ?? null}
+                initialComment={attendance?.comment ?? ""}
+              />
             </div>
           </div>
         ) : (

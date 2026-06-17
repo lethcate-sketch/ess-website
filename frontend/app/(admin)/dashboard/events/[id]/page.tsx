@@ -42,7 +42,15 @@ export default async function AdminEventEditPage({ params }: { params: { id: str
       </div>
 
       <section className="mt-12">
-        <h2 className="text-lg font-semibold">出欠集計（{event.attendances.length} 名回答）</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">出欠集計（{event.attendances.length} 名回答）</h2>
+          <Link
+            href={`/dashboard/events/${event.id}/survey`}
+            className="font-mono text-xs text-accent hover:underline"
+          >
+            アンケート結果を見る →
+          </Link>
+        </div>
         <div className="mt-4 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-4">
           {STATUS_KEYS.map((k) => (
             <div key={k} className="bg-surface p-4 text-center">

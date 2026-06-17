@@ -108,7 +108,8 @@ export default async function SchedulePage() {
                     <div className="mt-3 sm:pl-64">
                       <AttendanceControl
                         eventId={event.id}
-                        initialStatus={attMap[event.id]}
+                        initialStatus={attMap[event.id]?.status ?? null}
+                        initialComment={attMap[event.id]?.comment ?? ""}
                       />
                     </div>
                   )}

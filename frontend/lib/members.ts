@@ -39,16 +39,16 @@ export async function getUserAttendance(userId: string) {
   });
 }
 
-/** 指定イベント群に対する自分の出欠状況（eventId -> status）。 */
+/** 指定イベント群に対する自分の出欠状況（eventId -> { status, comment }）。 */
 export async function getUserAttendanceMap(userId: string, eventIds: string[]) {
-  if (eventIds.length === 0) return {} as Record<string, string>;
+  type Att = { status: string; comment: string | null };
+  if (eventIds.length === 0) return {} as Record<string, Att>;
   const rows = await prisma.attendance.findMany({
     where: { userId, eventId: { in: eventIds } },
   });
-  return Object.fromEntries(rows.map((r) => [r.eventId, r.status])) as Record<
-    string,
-    string
-  >;
+  return Object.fromEntries(
+    rows.map((r) => [r.eventId, { status: r.status, comment: r.comment }]),
+  ) as Record<string, Att>;
 }
 
 export async function getUserAttendanceForEvent(userId: string, eventId: string) {
