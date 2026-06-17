@@ -161,6 +161,26 @@ model KeyMember {
   @@map("key_members")
 }
 
+// トップページの編集可能コンテンツ（ヒーロー文・フィーチャー・ギャラリー）。シングルトン（常に1行）。
+// 項目（feature/gallery）の画像は本テーブルには持たず、SiteImage に key "feature-<id>" / "gallery-<id>"
+// で保存し /api/images/<key> で配信する。featureItems/galleryItems は JSON 文字列（SQLite に JSON 型が無いため）。
+// 各項目は nullable: NULL=未設定（コード側の既定値を使う） / 値あり=その内容を使う。
+// featureItems/galleryItems は "[]"（空配列）なら「管理者が全削除」を表す（NULL とは区別）。
+model HomeContent {
+  id             String   @id @default("default")
+  heroTitle      String?  @map("hero_title")
+  heroSubtitle   String?  @map("hero_subtitle")
+  featureEyebrow String?  @map("feature_eyebrow")
+  featureTitle   String?  @map("feature_title")
+  featureItems   String?  @map("feature_items") // JSON: [{ id, title, body }]
+  galleryEyebrow String?  @map("gallery_eyebrow")
+  galleryTitle   String?  @map("gallery_title")
+  galleryItems   String?  @map("gallery_items") // JSON: [{ id, label }]
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("home_content")
+}
+
 model SiteSetting {
   id                  String   @id @default("default") // シングルトン（常に1行）
   registrationEnabled Boolean  @default(false) @map("registration_enabled") // 新規登録の受付 ON/OFF

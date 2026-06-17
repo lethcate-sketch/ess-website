@@ -1,12 +1,34 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { FeatureSectionForm } from "@/components/admin/FeatureSectionForm";
+import { GallerySectionForm } from "@/components/admin/GallerySectionForm";
+import { HeroForm } from "@/components/admin/HeroForm";
 import { ImageManager } from "@/components/admin/ImageManager";
 import { getAdminStats } from "@/lib/admin";
+import { getHomeContent } from "@/lib/home";
 import { MANAGED_IMAGES } from "@/lib/siteImages";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "管理ダッシュボード" };
+
+function EditSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="mt-12 border-t border-line pt-8">
+      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+      <p className="mt-1 text-sm text-ink-muted">{description}</p>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
 
 function Stat({ label, value, href }: { label: string; value: ReactNode; href?: string }) {
   const content = (
@@ -30,7 +52,7 @@ function Stat({ label, value, href }: { label: string; value: ReactNode; href?: 
 }
 
 export default async function DashboardPage() {
-  const s = await getAdminStats();
+  const [s, home] = await Promise.all([getAdminStats(), getHomeContent()]);
 
   return (
     <main className="mx-auto max-w-content px-6 py-16">
@@ -68,17 +90,54 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* ===== サイト画像 ===== */}
-      <section className="mt-14">
-        <h2 className="text-xl font-semibold tracking-tight">サイト画像</h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          ロゴ・トップの写真や、各ページ（スケジュール・イベント）のヒーロー写真を差し替えます。
-          ファイルをアップロード（自動で軽量化）するか、画像URLを貼り付けてください。反映後はページを再読み込みしてください。
-        </p>
-        <div className="mt-5">
-          <ImageManager images={MANAGED_IMAGES.home} />
-        </div>
-      </section>
+      {/* ===== トップページ編集 ===== */}
+      <h2 className="mt-16 text-2xl font-semibold tracking-tight">トップページの編集</h2>
+      <p className="mt-1 text-sm text-ink-muted">
+        トップページの文章・画像を編集します。各セクションごとに「保存する」で反映され、反映後はページを再読み込みしてください。
+      </p>
+
+      <EditSection
+        title="ヒーローセクション"
+        description="トップ最上部の見出し・説明文・背景画像を編集します。"
+      >
+        <HeroForm
+          initial={{ heroTitle: home.heroTitle, heroSubtitle: home.heroSubtitle }}
+        />
+      </EditSection>
+
+      <EditSection
+        title="フィーチャーセクション（Why ESS）"
+        description="見出しと、写真・タイトル・本文の項目を編集します。項目の追加・削除もできます。"
+      >
+        <FeatureSectionForm
+          initial={{
+            featureEyebrow: home.featureEyebrow,
+            featureTitle: home.featureTitle,
+            featureItems: home.featureItems,
+          }}
+        />
+      </EditSection>
+
+      <EditSection
+        title="ギャラリーセクション"
+        description="見出しと、サムネイル画像・ラベルの項目を編集します。項目の追加・削除もできます。"
+      >
+        <GallerySectionForm
+          initial={{
+            galleryEyebrow: home.galleryEyebrow,
+            galleryTitle: home.galleryTitle,
+            galleryItems: home.galleryItems,
+          }}
+        />
+      </EditSection>
+
+      {/* ===== その他のサイト画像 ===== */}
+      <EditSection
+        title="その他のサイト画像"
+        description="ロゴと、各ページ（スケジュール・イベント）のヒーロー写真を差し替えます。"
+      >
+        <ImageManager images={MANAGED_IMAGES.home} />
+      </EditSection>
     </main>
   );
 }

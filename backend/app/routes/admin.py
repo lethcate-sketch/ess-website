@@ -1,4 +1,6 @@
 """管理者ダッシュボード/メンバー管理（§6 /api/admin, すべて 👑）。"""
+import re
+
 from flask import Blueprint, g, jsonify, request
 
 from ..extensions import SessionLocal
@@ -34,6 +36,13 @@ ALLOWED_IMAGE_KEYS = {
     "scheduleCover",
     "eventsCover",
 }
+
+# トップページのフィーチャー/ギャラリー項目の画像は動的キー（feature-<id> / gallery-<id>）。
+_DYNAMIC_IMAGE_KEY = re.compile(r"^(feature|gallery)-[A-Za-z0-9_-]{1,64}$")
+
+
+def _is_allowed_image_key(key: str) -> bool:
+    return key in ALLOWED_IMAGE_KEYS or bool(_DYNAMIC_IMAGE_KEY.match(key))
 
 
 def _active_admin_count() -> int:
@@ -165,7 +174,7 @@ def get_images():
 @bp.put("/images/<key>")
 @admin_required
 def put_image(key):
-    if key not in ALLOWED_IMAGE_KEYS:
+    if not _is_allowed_image_key(key):
         return error_response("INVALID_KEY", "未知の画像キーです。", 400)
     data, err = validate(ImageUpdateIn, request.get_json(silent=True) or {})
     if err:

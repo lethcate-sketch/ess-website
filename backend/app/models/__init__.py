@@ -5,7 +5,7 @@
 """
 from ..extensions import Base
 from .attendance import Attendance
-from .circle import CircleInfo, KeyMember
+from .circle import CircleInfo, HomeContent, KeyMember
 from .event import Event
 from .form import ContactInquiry, ParticipationRequest
 from .image import SiteImage
@@ -24,6 +24,7 @@ __all__ = [
     "ParticipationRequest",
     "ContactInquiry",
     "CircleInfo",
+    "HomeContent",
     "KeyMember",
     "SiteSetting",
     "SiteImage",

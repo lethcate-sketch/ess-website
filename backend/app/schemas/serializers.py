@@ -129,6 +129,23 @@ def serialize_circle_info(c) -> dict | None:
     }
 
 
+def serialize_home_content(h) -> dict | None:
+    if h is None:
+        return None
+    return {
+        "id": h.id,
+        "heroTitle": h.heroTitle,
+        "heroSubtitle": h.heroSubtitle,
+        "featureEyebrow": h.featureEyebrow,
+        "featureTitle": h.featureTitle,
+        "featureItems": _parse_json(h.featureItems) or [],
+        "galleryEyebrow": h.galleryEyebrow,
+        "galleryTitle": h.galleryTitle,
+        "galleryItems": _parse_json(h.galleryItems) or [],
+        "updatedAt": iso(h.updatedAt),
+    }
+
+
 def serialize_key_member(m) -> dict:
     return {
         "id": m.id,

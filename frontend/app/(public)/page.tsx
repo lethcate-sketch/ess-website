@@ -8,46 +8,15 @@ import {
   ArrowRightIcon,
   CalendarIcon,
   ChatIcon,
-  GlobeIcon,
   SparkleIcon,
   UsersIcon,
 } from "@/components/ui/Icons";
+import { getHomeContent } from "@/lib/home";
 import { getUpcomingPublishedEvents } from "@/lib/events";
 import { SITE_IMAGES } from "@/lib/siteImages";
 
-// トップ「活動の様子」ギャラリー
-const GALLERY = [
-  { key: "discussion", label: "Discussion", img: SITE_IMAGES.galleryDiscussion },
-  { key: "speech", label: "Speech", img: SITE_IMAGES.gallerySpeech },
-  { key: "social", label: "交流会", img: SITE_IMAGES.gallerySocial },
-  { key: "drama", label: "Drama", img: SITE_IMAGES.galleryDrama },
-];
-
-const FEATURES = [
-  {
-    Icon: ChatIcon,
-    title: "英語でディスカッション",
-    body: "テーマに沿って、レベル別の少人数グループで自由に話します。話す力と考える力が自然と育ちます。",
-    chip: "bg-brand-50 text-brand-600 ring-brand-100",
-    card: "bg-brand-50/40",
-  },
-  {
-    Icon: GlobeIcon,
-    title: "国際的な交流",
-    body: "多様なバックグラウンドのメンバーや外部サークルとの交流で、視野と世界が広がります。",
-    chip: "bg-mint-50 text-mint-400 ring-mint-100",
-    card: "bg-mint-50/50",
-  },
-  {
-    Icon: UsersIcon,
-    title: "あたたかいコミュニティ",
-    body: "初参加・見学はいつでも歓迎。英語が得意でなくても大丈夫。まずは雰囲気を見にきてください。",
-    chip: "bg-brand-50 text-brand-600 ring-brand-100",
-    card: "bg-brand-50/40",
-  },
-];
-
 export default async function HomePage() {
+  const home = await getHomeContent();
   // イベント取得が失敗してもトップ全体を 500 にせず、ヒーローは表示する（堅牢化）。
   let events: Awaited<ReturnType<typeof getUpcomingPublishedEvents>> = [];
   try {
@@ -64,12 +33,8 @@ export default async function HomePage() {
         alt={SITE_IMAGES.hero.alt}
         size="tall"
         eyebrow="English Speaking Society"
-        title={
-          <>
-            英語で、<span className="text-mint-200">世界</span>と議論しよう。
-          </>
-        }
-        subtitle="レベルを問わず英語でのディスカッションを楽しむサークルです。定例会・特別企画・外部交流を通じて、話す力と考える力を磨きます。見学・初参加はいつでも歓迎します。"
+        title={home.heroTitle}
+        subtitle={home.heroSubtitle}
       >
         <Link
           href="/join"
@@ -86,60 +51,70 @@ export default async function HomePage() {
         </Link>
       </PageHero>
 
-      {/* ===== 特徴 ===== */}
-      <section className="mx-auto max-w-content px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
-        <SectionTitle
-          icon={SparkleIcon}
-          eyebrow="Why ESS"
-          title="ESS でできること"
-          tone="mint"
-        />
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className={`rounded-3xl border border-line/60 ${f.card} p-7 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-card-hover`}
-            >
-              <span
-                className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${f.chip}`}
-              >
-                <f.Icon className="h-6 w-6" />
-              </span>
-              <h3 className="mt-5 font-display text-lg font-bold text-navy">
-                {f.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ===== 活動の様子（ギャラリー） ===== */}
-      <section className="bg-white/60 py-20 lg:py-28">
-        <div className="mx-auto max-w-content px-6 sm:px-10 lg:px-16">
-          <SectionTitle icon={UsersIcon} eyebrow="Gallery" title="活動の様子" />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {GALLERY.map((g) => (
+      {/* ===== 特徴（Why ESS） ===== */}
+      {home.featureItems.length > 0 && (
+        <section className="mx-auto max-w-content px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
+          <SectionTitle
+            icon={SparkleIcon}
+            eyebrow={home.featureEyebrow}
+            title={home.featureTitle}
+            tone="mint"
+          />
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {home.featureItems.map((f) => (
               <div
-                key={g.key}
-                className="group overflow-hidden rounded-3xl shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover"
+                key={f.id}
+                className="group overflow-hidden rounded-3xl border border-line/60 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover"
               >
                 <Photo
-                  src={g.img.src}
-                  alt={g.img.alt}
-                  gradient
-                  className="aspect-square"
-                  overlay={
-                    <span className="absolute bottom-3 left-4 font-display text-base font-bold text-white drop-shadow">
-                      {g.label}
-                    </span>
-                  }
+                  src={`/api/images/feature-${f.id}`}
+                  alt={f.title}
+                  className="aspect-[16/10]"
                 />
+                <div className="p-7">
+                  <h3 className="font-display text-lg font-bold text-navy">{f.title}</h3>
+                  {f.body && (
+                    <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.body}</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* ===== 活動の様子（ギャラリー） ===== */}
+      {home.galleryItems.length > 0 && (
+        <section className="bg-white/60 py-20 lg:py-28">
+          <div className="mx-auto max-w-content px-6 sm:px-10 lg:px-16">
+            <SectionTitle
+              icon={UsersIcon}
+              eyebrow={home.galleryEyebrow}
+              title={home.galleryTitle}
+            />
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {home.galleryItems.map((g) => (
+                <div
+                  key={g.id}
+                  className="group overflow-hidden rounded-3xl shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover"
+                >
+                  <Photo
+                    src={`/api/images/gallery-${g.id}`}
+                    alt={g.label}
+                    gradient
+                    className="aspect-square"
+                    overlay={
+                      <span className="absolute bottom-3 left-4 font-display text-base font-bold text-white drop-shadow">
+                        {g.label}
+                      </span>
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ===== 今後のイベント ===== */}
       <section className="mx-auto max-w-content px-6 pb-24 sm:px-10 lg:px-16">

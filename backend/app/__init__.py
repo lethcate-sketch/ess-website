@@ -96,6 +96,7 @@ def register_blueprints(app: Flask) -> None:
     from .routes.circle import bp as circle_bp
     from .routes.events import bp as events_bp
     from .routes.forms import bp as forms_bp
+    from .routes.home import bp as home_bp
     from .routes.members import bp as members_bp
     from .routes.survey import bp as survey_bp
 
@@ -107,3 +108,4 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(events_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(circle_bp)
+    app.register_blueprint(home_bp)

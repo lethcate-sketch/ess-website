@@ -68,6 +68,9 @@ export function defaultImage(key: string): string | undefined {
   if (key in IMAGE_DEFAULTS) return IMAGE_DEFAULTS[key];
   const m = /^member-(\d+)$/.exec(key);
   if (m) return MEMBER_DEFAULTS[Number(m[1]) % MEMBER_DEFAULTS.length];
+  // トップのフィーチャー/ギャラリー項目（feature-<id> / gallery-<id>）は未設定でも
+  // キーをseedにしたサンプルを返し、画像割れを防ぐ。
+  if (/^(feature|gallery)-/.test(key)) return sample(key, 800, 600);
   return undefined;
 }
 
@@ -81,15 +84,12 @@ export type ManagedImage = {
 };
 
 export const MANAGED_IMAGES: { home: ManagedImage[]; about: ManagedImage[] } = {
+  // ロゴと各ページのカバー写真。トップのヒーロー画像・ギャラリー画像は
+  // 概要ページの「ヒーロー編集」「ギャラリー編集」で扱う。
   home: [
     { key: "logo", label: "ロゴ", format: "png", hint: "背景が透明な PNG を推奨" },
-    { key: "hero", label: "ヒーロー写真（トップ大）", hint: "横長の活動写真を推奨" },
     { key: "scheduleCover", label: "スケジュール: ヒーロー写真", hint: "横長の活動写真を推奨" },
     { key: "eventsCover", label: "イベント: ヒーロー写真", hint: "横長の活動写真を推奨" },
-    { key: "galleryDiscussion", label: "ギャラリー: Discussion" },
-    { key: "gallerySpeech", label: "ギャラリー: Speech" },
-    { key: "gallerySocial", label: "ギャラリー: 交流会" },
-    { key: "galleryDrama", label: "ギャラリー: Drama" },
   ],
   about: [
     { key: "aboutCover", label: "カバー写真" },

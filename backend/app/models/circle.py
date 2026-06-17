@@ -20,6 +20,25 @@ class CircleInfo(Base):
     )
 
 
+class HomeContent(Base):
+    """トップページの編集可能コンテンツ（Prisma home_content のミラー）。シングルトン。"""
+
+    __tablename__ = "home_content"  # Prisma @@map("home_content")
+
+    id = Column("id", String, primary_key=True, default="default")
+    heroTitle = Column("hero_title", String, nullable=True)
+    heroSubtitle = Column("hero_subtitle", String, nullable=True)
+    featureEyebrow = Column("feature_eyebrow", String, nullable=True)
+    featureTitle = Column("feature_title", String, nullable=True)
+    featureItems = Column("feature_items", String, nullable=True)  # JSON 文字列
+    galleryEyebrow = Column("gallery_eyebrow", String, nullable=True)
+    galleryTitle = Column("gallery_title", String, nullable=True)
+    galleryItems = Column("gallery_items", String, nullable=True)  # JSON 文字列
+    updatedAt = Column(
+        "updated_at", PrismaDateTime, nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+
 class KeyMember(Base):
     __tablename__ = "key_members"  # Prisma @@map("key_members")
 
