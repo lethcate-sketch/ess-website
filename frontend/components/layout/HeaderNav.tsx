@@ -91,7 +91,7 @@ export function HeaderNav({ isLoggedIn, isAdmin }: Props) {
           <img
             src={LOGO_SRC}
             alt="ESS English Speaking Society"
-            className="h-9 w-auto transition-transform group-hover:scale-105 sm:h-10"
+            className="h-[4.5rem] w-auto transition-transform group-hover:scale-105 sm:h-20"
           />
         </Link>
 
