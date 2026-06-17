@@ -85,13 +85,13 @@ export function HeaderNav({ isLoggedIn, isAdmin }: Props) {
           : "border-transparent bg-brand-50/40",
       )}
     >
-      <div className="mx-auto flex max-w-content items-center justify-between gap-3 px-5 py-3 sm:px-6">
+      <div className="mx-auto flex max-w-content items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="group flex items-center" aria-label="ESS ホーム">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={LOGO_SRC}
             alt="ESS English Speaking Society"
-            className="h-[4.5rem] w-auto transition-transform group-hover:scale-105 sm:h-20"
+            className="h-16 w-auto transition-transform group-hover:scale-105 sm:h-[4.5rem]"
           />
         </Link>
 
