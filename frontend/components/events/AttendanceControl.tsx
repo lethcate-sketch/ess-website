@@ -7,6 +7,8 @@ import { ATTENDANCE_STATUS_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
 const OPTIONS = ["ATTENDING", "LATE", "UNDECIDED", "ABSENT"];
+// 理由（comment）を入力できるステータス
+const REASON_STATUSES = new Set(["LATE", "ABSENT"]);
 
 export function AttendanceControl({
   eventId,
@@ -20,10 +22,11 @@ export function AttendanceControl({
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(initialStatus ?? null);
   const [comment, setComment] = useState(initialComment ?? "");
+  // 直近にサーバへ保存した理由。これと現在の入力が一致していれば「保存済み」。
+  const [savedComment, setSavedComment] = useState((initialComment ?? "").trim());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // status と comment（遅刻理由）を送信する。遅刻以外では理由を消す。
   async function submit(nextStatus: string, nextComment: string | null) {
     setLoading(true);
     setError(null);
@@ -50,9 +53,26 @@ export function AttendanceControl({
   }
 
   async function chooseStatus(next: string) {
-    const ok = await submit(next, next === "LATE" ? comment.trim() || null : null);
-    if (ok && next !== "LATE") setComment("");
+    const reason = REASON_STATUSES.has(next) ? comment.trim() || null : null;
+    const ok = await submit(next, reason);
+    if (!ok) return;
+    if (REASON_STATUSES.has(next)) {
+      setSavedComment(comment.trim());
+    } else {
+      setComment("");
+      setSavedComment("");
+    }
   }
+
+  async function saveReason() {
+    if (!status) return;
+    const ok = await submit(status, comment.trim() || null);
+    if (ok) setSavedComment(comment.trim());
+  }
+
+  const showReason = status != null && REASON_STATUSES.has(status);
+  const isSaved = comment.trim() !== "" && comment.trim() === savedComment;
+  const reasonLabel = status === "ABSENT" ? "欠席理由" : "遅刻理由";
 
   return (
     <div className="space-y-2">
@@ -76,23 +96,28 @@ export function AttendanceControl({
         {error && <span className="text-xs text-danger">{error}</span>}
       </div>
 
-      {status === "LATE" && (
+      {showReason && (
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="text"
             value={comment}
             maxLength={1000}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="遅刻理由（任意）"
+            placeholder={`${reasonLabel}（任意）`}
             className="min-w-0 flex-1 border border-line bg-surface px-3 py-1.5 text-sm text-ink outline-none transition-colors focus:border-accent"
           />
           <button
             type="button"
-            disabled={loading}
-            onClick={() => submit("LATE", comment.trim() || null)}
-            className="border border-accent px-3 py-1.5 text-xs text-accent transition-colors hover:bg-accent-subtle disabled:opacity-50"
+            disabled={loading || isSaved}
+            onClick={saveReason}
+            className={cn(
+              "border px-3 py-1.5 text-xs transition-colors disabled:opacity-60",
+              isSaved
+                ? "border-mint-200 bg-mint-50 text-navy"
+                : "border-accent text-accent hover:bg-accent-subtle",
+            )}
           >
-            理由を保存
+            {isSaved ? "保存済み" : "理由を保存"}
           </button>
         </div>
       )}

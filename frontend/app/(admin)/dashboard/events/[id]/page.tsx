@@ -1,21 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AttendanceSummary } from "@/components/admin/AttendanceSummary";
 import { DeleteEventButton } from "@/components/admin/DeleteEventButton";
 import { EventForm } from "@/components/admin/EventForm";
 import { getEventWithAttendance } from "@/lib/admin";
-import { ATTENDANCE_STATUS_LABEL } from "@/lib/labels";
 
 export const metadata = { title: "イベント編集" };
-
-const STATUS_KEYS = ["ATTENDING", "LATE", "UNDECIDED", "ABSENT"];
 
 export default async function AdminEventEditPage({ params }: { params: { id: string } }) {
   const event = await getEventWithAttendance(params.id);
   if (!event) notFound();
-
-  const counts: Record<string, number> = { ATTENDING: 0, LATE: 0, UNDECIDED: 0, ABSENT: 0 };
-  for (const a of event.attendances) counts[a.status] = (counts[a.status] ?? 0) + 1;
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
@@ -51,29 +46,16 @@ export default async function AdminEventEditPage({ params }: { params: { id: str
 アンケート（設問・結果）→
           </Link>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-4">
-          {STATUS_KEYS.map((k) => (
-            <div key={k} className="bg-surface p-4 text-center">
-              <p className="font-mono text-2xl font-semibold">{counts[k]}</p>
-              <p className="mt-1 font-mono text-[11px] uppercase tracking-wide text-ink-subtle">
-                {ATTENDANCE_STATUS_LABEL[k]}
-              </p>
-            </div>
-          ))}
+        <div className="mt-4">
+          <AttendanceSummary
+            attendances={event.attendances.map((a) => ({
+              id: a.id,
+              name: a.user?.name ?? "—",
+              status: a.status,
+              comment: a.comment,
+            }))}
+          />
         </div>
-        {event.attendances.length > 0 && (
-          <ul className="mt-4 divide-y divide-line border-y border-line text-sm">
-            {event.attendances.map((a) => (
-              <li key={a.id} className="flex items-center justify-between py-2">
-                <span>{a.user?.name ?? "—"}</span>
-                <span className="font-mono text-xs text-ink-muted">
-                  {ATTENDANCE_STATUS_LABEL[a.status] ?? a.status}
-                  {a.comment ? ` ・ ${a.comment}` : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
 
       <section className="mt-12 border-t border-line pt-6">

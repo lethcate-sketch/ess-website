@@ -1,9 +1,4 @@
-"use client";
-
-import { useMemo, useState } from "react";
-
 import { ATTENDANCE_STATUS_LABEL } from "@/lib/labels";
-import { cn } from "@/lib/utils";
 
 export type SurveyQuestion = {
   id: string;
@@ -19,11 +14,11 @@ export type SurveyRespondent = {
   answers: Record<string, { text: string | null; choice: string[] }>;
 };
 
-// 出欠ステータスの並びとラベル（未登録を含む）
-const STATUS_ORDER = ["ATTENDING", "LATE", "UNDECIDED", "ABSENT", "NONE"];
 const STATUS_LABEL: Record<string, string> = { ...ATTENDANCE_STATUS_LABEL, NONE: "未登録" };
 const statusKey = (r: SurveyRespondent) => r.attendanceStatus ?? "NONE";
+const REASON_STATUSES = new Set(["LATE", "ABSENT"]);
 
+/** アンケート結果: 設問ごとの集計＋回答者一覧（全回答者対象）。 */
 export function SurveyResults({
   questions,
   respondents,
@@ -31,68 +26,15 @@ export function SurveyResults({
   questions: SurveyQuestion[];
   respondents: SurveyRespondent[];
 }) {
-  // 既定は全ステータス選択
-  const [selected, setSelected] = useState<Set<string>>(new Set(STATUS_ORDER));
-
-  const countsByStatus = useMemo(() => {
-    const c: Record<string, number> = {};
-    for (const r of respondents) c[statusKey(r)] = (c[statusKey(r)] ?? 0) + 1;
-    return c;
-  }, [respondents]);
-
-  const filtered = useMemo(
-    () => respondents.filter((r) => selected.has(statusKey(r))),
-    [respondents, selected],
-  );
-
-  function toggle(s: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s);
-      else next.add(s);
-      return next;
-    });
-  }
-
   const isText = (q: SurveyQuestion) => q.inputType === "TEXT";
 
   return (
     <div className="space-y-10">
-      {/* ===== フィルタ（出欠で絞り込み） ===== */}
+      {/* ===== 設問ごとの集計 ===== */}
       <section>
-        <h2 className="font-display text-lg font-bold text-navy">回答者の絞り込み（出欠）</h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          ステータスを選ぶと、下の集計・一覧がその回答者だけに絞り込まれます。
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {STATUS_ORDER.map((s) => {
-            const on = selected.has(s);
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => toggle(s)}
-                aria-pressed={on}
-                className={cn(
-                  "border px-3 py-1.5 font-mono text-xs transition-colors",
-                  on
-                    ? "border-accent bg-accent text-accent-fg"
-                    : "border-line text-ink-muted hover:border-ink",
-                )}
-              >
-                {STATUS_LABEL[s]}（{countsByStatus[s] ?? 0}）
-              </button>
-            );
-          })}
-          <span className="ml-2 font-mono text-xs text-ink-subtle">
-            表示: {filtered.length} / {respondents.length} 名
-          </span>
-        </div>
-      </section>
-
-      {/* ===== 設問ごとの集計（フィルタ連動） ===== */}
-      <section>
-        <h2 className="font-display text-lg font-bold text-navy">集計結果</h2>
+        <h2 className="font-display text-lg font-bold text-navy">
+          集計結果（回答 {respondents.length} 名）
+        </h2>
         {questions.length === 0 ? (
           <p className="mt-2 text-sm text-ink-muted">設問がありません。</p>
         ) : (
@@ -105,9 +47,9 @@ export function SurveyResults({
                 </p>
                 <div className="mt-3">
                   {isText(q) ? (
-                    <TextAnswers question={q} respondents={filtered} />
+                    <TextAnswers question={q} respondents={respondents} />
                   ) : (
-                    <ChoiceTally question={q} respondents={filtered} />
+                    <ChoiceTally question={q} respondents={respondents} />
                   )}
                 </div>
               </div>
@@ -119,8 +61,8 @@ export function SurveyResults({
       {/* ===== 回答者一覧（各ユーザーの回答） ===== */}
       <section>
         <h2 className="font-display text-lg font-bold text-navy">回答者一覧</h2>
-        {filtered.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-muted">該当する回答者がいません。</p>
+        {respondents.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-muted">まだ回答がありません。</p>
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="w-full border-collapse text-sm">
@@ -133,7 +75,7 @@ export function SurveyResults({
                     出欠
                   </th>
                   <th className="whitespace-nowrap px-3 py-2 font-mono text-[11px] uppercase tracking-wide text-ink-subtle">
-                    遅刻理由
+                    理由
                   </th>
                   {questions.map((q, i) => (
                     <th
@@ -146,7 +88,7 @@ export function SurveyResults({
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((r) => (
+                {respondents.map((r) => (
                   <tr key={r.userId} className="border-b border-line/60 align-top">
                     <td className="whitespace-nowrap px-3 py-2 font-medium text-ink">{r.name}</td>
                     <td className="whitespace-nowrap px-3 py-2">
@@ -155,7 +97,9 @@ export function SurveyResults({
                       </span>
                     </td>
                     <td className="px-3 py-2 text-ink-muted">
-                      {r.attendanceStatus === "LATE" ? r.lateReason || "—" : "—"}
+                      {r.attendanceStatus && REASON_STATUSES.has(r.attendanceStatus)
+                        ? r.lateReason || "—"
+                        : "—"}
                     </td>
                     {questions.map((q) => (
                       <td key={q.id} className="px-3 py-2 text-ink">
@@ -193,7 +137,6 @@ function ChoiceTally({
     if (choices.length) answered += 1;
     for (const c of choices) counts[c] = (counts[c] ?? 0) + 1;
   }
-  // 選択肢（定義済み）＋ 定義外で実際に出た値 の順で表示
   const keys = [
     ...question.options,
     ...Object.keys(counts).filter((k) => !question.options.includes(k)),
