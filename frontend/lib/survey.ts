@@ -28,3 +28,28 @@ export async function getEventSurveyResults(eventId: string) {
 
   return { event, questions, attendances, responses };
 }
+
+/** メンバーの回答用: イベントの設問一覧（orderIndex 昇順）。 */
+export async function getEventQuestions(eventId: string) {
+  return prisma.eventSurveyQuestion.findMany({
+    where: { eventId },
+    orderBy: { orderIndex: "asc" },
+  });
+}
+
+/** 自分の既存回答（questionId -> { answerText, answerChoice(JSON文字列) }）。プリフィル用。 */
+export async function getUserSurveyAnswers(userId: string, eventId: string) {
+  type Ans = { answerText: string | null; answerChoice: string | null };
+  const qs = await prisma.eventSurveyQuestion.findMany({
+    where: { eventId },
+    select: { id: true },
+  });
+  const qIds = qs.map((q) => q.id);
+  if (qIds.length === 0) return {} as Record<string, Ans>;
+  const rows = await prisma.eventSurveyResponse.findMany({
+    where: { userId, questionId: { in: qIds } },
+  });
+  return Object.fromEntries(
+    rows.map((r) => [r.questionId, { answerText: r.answerText, answerChoice: r.answerChoice }]),
+  ) as Record<string, Ans>;
+}

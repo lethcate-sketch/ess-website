@@ -5,6 +5,7 @@ import {
   SurveyResults,
   type SurveyRespondent,
 } from "@/components/admin/SurveyResults";
+import { SurveyQuestionManager } from "@/components/admin/SurveyQuestionManager";
 import { getEventSurveyResults } from "@/lib/survey";
 
 export const metadata = { title: "アンケート結果" };
@@ -41,6 +42,7 @@ export default async function SurveyResultPage({ params }: { params: { id: strin
     questionText: q.questionText,
     inputType: q.inputType,
     options: parseOptions(q.options),
+    required: q.required,
   }));
 
   // 出欠（userId -> attendance）
@@ -76,13 +78,23 @@ export default async function SurveyResultPage({ params }: { params: { id: strin
       >
         ← イベント編集
       </Link>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">アンケート結果</h1>
+      <h1 className="mt-4 text-3xl font-semibold tracking-tight">アンケート</h1>
       <p className="mt-2 text-ink-muted">{data.event.title}</p>
 
-      <div className="mt-10">
+      <section className="mt-10">
+        <h2 className="font-display text-lg font-bold text-navy">設問の管理</h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          アンケートの設問を作成・削除します。メンバーはイベント詳細ページから回答できます。
+        </p>
+        <div className="mt-4">
+          <SurveyQuestionManager eventId={data.event.id} questions={questions} />
+        </div>
+      </section>
+
+      <div className="mt-12 border-t border-line pt-8">
         {questions.length === 0 ? (
           <p className="text-sm text-ink-muted">
-            このイベントにはアンケートの設問が登録されていません。
+            設問を追加すると、ここに回答の集計が表示されます。
           </p>
         ) : (
           <SurveyResults questions={questions} respondents={respondents} />

@@ -102,6 +102,23 @@ def create_question(event_id):
     return jsonify({"question": serialize_survey_question(q)}), 201
 
 
+@bp.delete("/events/<event_id>/survey/questions/<question_id>")
+@admin_required
+def delete_question(event_id, question_id):
+    q = (
+        SessionLocal.query(EventSurveyQuestion)
+        .filter_by(id=question_id, eventId=event_id)
+        .first()
+    )
+    if q is None:
+        return error_response("NOT_FOUND", "設問が見つかりません。", 404)
+    # 設問に紐づく回答も削除する
+    SessionLocal.query(EventSurveyResponse).filter_by(questionId=question_id).delete()
+    SessionLocal.delete(q)
+    SessionLocal.commit()
+    return jsonify({"ok": True})
+
+
 @bp.get("/events/<event_id>/survey/responses")
 @admin_required
 def survey_responses(event_id):

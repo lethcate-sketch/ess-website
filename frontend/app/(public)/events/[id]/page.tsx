@@ -3,12 +3,24 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { AttendanceControl } from "@/components/events/AttendanceControl";
+import { SurveyForm } from "@/components/events/SurveyForm";
 import { Badge } from "@/components/ui/Badge";
 import { DateTime } from "@/components/ui/DateTime";
 import { getSession } from "@/lib/auth";
 import { getEventById, isPublicViewable } from "@/lib/events";
 import { EVENT_STATUS_LABEL, EVENT_TYPE_LABEL } from "@/lib/labels";
 import { getUserAttendanceForEvent } from "@/lib/members";
+import { getEventQuestions, getUserSurveyAnswers } from "@/lib/survey";
+
+function parseOptions(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v.map(String) : [];
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const event = await getEventById(params.id);
@@ -29,9 +41,20 @@ export default async function EventDetailPage({ params }: { params: { id: string
   if (!event || !isPublicViewable(event)) notFound();
 
   const session = await getSession();
-  const attendance = session
-    ? await getUserAttendanceForEvent(session.sub, event.id)
-    : null;
+  const [attendance, rawQuestions, surveyAnswers] = session
+    ? await Promise.all([
+        getUserAttendanceForEvent(session.sub, event.id),
+        getEventQuestions(event.id),
+        getUserSurveyAnswers(session.sub, event.id),
+      ])
+    : [null, [], {}];
+  const surveyQuestions = rawQuestions.map((q) => ({
+    id: q.id,
+    questionText: q.questionText,
+    inputType: q.inputType,
+    options: parseOptions(q.options),
+    required: q.required,
+  }));
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
@@ -96,6 +119,21 @@ export default async function EventDetailPage({ params }: { params: { id: string
           </div>
         )}
       </div>
+
+      {session && surveyQuestions.length > 0 && (
+        <div className="mt-10 border-t border-line pt-6">
+          <p className="font-mono text-[11px] uppercase tracking-wide text-ink-subtle">
+            アンケート
+          </p>
+          <div className="mt-3">
+            <SurveyForm
+              eventId={event.id}
+              questions={surveyQuestions}
+              initialAnswers={surveyAnswers}
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

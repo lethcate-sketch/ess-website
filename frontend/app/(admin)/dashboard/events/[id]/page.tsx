@@ -48,7 +48,7 @@ export default async function AdminEventEditPage({ params }: { params: { id: str
             href={`/dashboard/events/${event.id}/survey`}
             className="font-mono text-xs text-accent hover:underline"
           >
-            アンケート結果を見る →
+アンケート（設問・結果）→
           </Link>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-4">
