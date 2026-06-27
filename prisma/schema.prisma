@@ -1,5 +1,8 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Vercel(Next)のサーバーレス実行環境(Amazon Linux)向けのクエリエンジンも生成する。
+  // native=ローカル/ビルド環境, rhel-*=Vercel/Lambda(OpenSSL 1.x/3.x)。
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -14,6 +17,7 @@ model User {
   name         String
   nameKana     String?  @map("name_kana")
   role         String   @default("MEMBER") // MEMBER | ADMIN
+  lineUserId   String?  @unique @map("line_user_id") // LINE userId（友だち紐付け用）。未連携はnull・連携済みは一意
   grade        String?
   department   String?
   bio          String?
@@ -136,6 +140,22 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id])
 
   @@map("refresh_tokens")
+}
+
+// LINE 友だち紐付け用の招待コード（LINE移行）。
+// メンバーがトークに code を送ると Webhook(Next)が照合し User.lineUserId を紐付ける。
+// userId 指定あり = 既存メンバー専用コード（その人に固定）。userId 空 = 新規メンバー作成用（汎用）。
+model LineLinkToken {
+  id               String    @id @default(uuid())
+  code             String    @unique // 招待コード（保存・照合とも大文字に正規化）
+  userId           String?   @map("user_id") // 紐付け先の既存 User.id（ソフト参照）。空なら新規作成
+  note             String? // 管理用メモ（配布先など）
+  expiresAt        DateTime? @map("expires_at") // 失効時刻（任意）
+  usedAt           DateTime? @map("used_at") // 使用済み時刻（null=未使用）
+  usedByLineUserId String?   @map("used_by_line_user_id") // 実際に使った LINE userId（監査用）
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@map("line_link_tokens")
 }
 
 model CircleInfo {

@@ -88,6 +88,12 @@ export default async function DashboardPage() {
         >
           メンバー管理
         </Link>
+        <Link
+          href="/dashboard/line"
+          className="border border-line px-4 py-2 text-sm hover:border-ink"
+        >
+          LINE招待コード
+        </Link>
       </div>
 
       {/* ===== トップページ編集 ===== */}

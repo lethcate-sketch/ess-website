@@ -62,8 +62,13 @@ def login():
     if err:
         return err
     user = SessionLocal.query(User).filter_by(email=data.email).first()
-    if user is None or not bcrypt.checkpw(
-        data.password.encode("utf-8"), user.passwordHash.encode("utf-8")
+    # passwordHash が空 = パスワードレス（LINE連携専用）アカウント。パスワードログイン不可として弾く。
+    if (
+        user is None
+        or not user.passwordHash
+        or not bcrypt.checkpw(
+            data.password.encode("utf-8"), user.passwordHash.encode("utf-8")
+        )
     ):
         return error_response("INVALID_CREDENTIALS", "メールアドレスまたはパスワードが違います。", 401)
     if not user.isActive:

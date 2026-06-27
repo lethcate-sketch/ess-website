@@ -1,40 +1,20 @@
-# Render Blueprint — ESS 公式サイト（PostgreSQL + Flask API + Next.js）
+# Render Blueprint — ESS Flask API のみ（DB=Neon / Web=Vercel へ移行後）
 # ------------------------------------------------------------------------------
-# 構成:
-#   - ess-db  : Managed PostgreSQL（Prisma / SQLAlchemy が同一DBを参照）
-#   - ess-api : Flask API（gunicorn）
-#   - ess-web : Next.js（SSR + Prisma 直読み + BFF で ess-api を中継）
+# 構成（移行後）:
+#   - DB        : Neon（無料 PostgreSQL・外部から到達可能）
+#   - Web/BFF   : Vercel（Next.js。公開ページ・管理画面UI・LINE Webhook・BFFプロキシ）
+#   - API       : Render 無料（この Flask。管理操作=書き込み・認証のみ）
 #
-# 重要な設計判断:
-#   1. マイグレーション(prisma migrate deploy)と seed は「ビルド時」ではなく「起動時」に実行する。
-#      Render のビルド環境は内部DB(dpg-...)に到達できないため、DB接続は実行時に限る。
-#      （公開ページは force-dynamic でSSR化済みなので、next build 自体はDB不要。）
-#   2. JWT_SECRET は envVarGroup で1度だけ生成し、Flask と Next で同一値を共有する
-#      （Flaskが署名 / Next middleware が検証 / §3-4）。
-#   3. サービス間URL(FLASK_API_BASE_URL / NEXT_PUBLIC_SITE_URL)と初期管理者は
-#      Render が完全なURLを env で参照する手段を持たないため sync:false とし、
-#      初回デプロイ後にダッシュボードで実URLを設定する（手順は会話の最後を参照）。
+# 設計判断:
+#   1. LINE Webhook は Vercel(Next) 側にあるため、この Flask がスリープしても出欠受信に影響しない。
+#      Flask のスリープが遅らせるのは管理操作のみで、Next BFF の起床待ちリトライが吸収する。
+#   2. DATABASE_URL は Neon の接続文字列（外部到達可能）。低トラフィックのため直接接続(非プール)で十分。
+#   3. JWT_SECRET は Vercel と「同一値」を設定する（Flask が署名・Next middleware/BFF が検証）。
+#      2拠点に分かれたため自動生成にせず、ユーザーが1つ生成して両方へ設定する。
+#   4. サービス間URL（NEXT_PUBLIC_SITE_URL=Vercelの公開URL）は初回デプロイ後にダッシュボードで設定。
 # ------------------------------------------------------------------------------
-
-databases:
-  - name: ess-db
-    plan: free
-    databaseName: english_circle
-    user: ess
-
-envVarGroups:
-  - name: ess-shared
-    envVars:
-      # Flask が署名し、Next middleware が検証する共有シークレット（自動生成）
-      - key: JWT_SECRET
-        generateValue: true
-      - key: JWT_ACCESS_EXPIRES_MIN
-        value: "15"
-      - key: JWT_REFRESH_EXPIRES_DAYS
-        value: "14"
 
 services:
-  # --- Flask API -------------------------------------------------------------
   - type: web
     name: ess-api
     runtime: python
@@ -44,52 +24,18 @@ services:
     startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     healthCheckPath: /api/health
     envVars:
-      - fromGroup: ess-shared
+      # Neon の接続文字列（postgresql://...）。ダッシュボードで設定（機密のためリポジトリに置かない）。
       - key: DATABASE_URL
-        fromDatabase:
-          name: ess-db
-          property: connectionString
+        sync: false
+      # Vercel と同一の共有シークレット。ダッシュボードで設定。
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ACCESS_EXPIRES_MIN
+        value: "15"
+      - key: JWT_REFRESH_EXPIRES_DAYS
+        value: "14"
       - key: PYTHON_VERSION
         value: "3.12.8"
-      # CORS 許可オリジン。初回デプロイ後に ess-web の公開URL(https://...onrender.com)を設定する。
+      # CORS 許可オリジン。Vercel の公開URL（https://...vercel.app）を初回デプロイ後に設定。
       - key: NEXT_PUBLIC_SITE_URL
         sync: false
-
-  # --- Next.js (フロント / BFF) ----------------------------------------------
-  - type: web
-    name: ess-web
-    runtime: node
-    plan: free
-    rootDir: .
-    # ルートの Prisma Client を生成 → フロントの依存を入れて next build。
-    # --include=dev で devDeps(prisma/tsx/tailwind/typescript)を確実に導入する
-    # （Render は NODE_ENV=production のため、付けないと devDeps が省かれる）。
-    buildCommand: >-
-      npm ci --include=dev &&
-      npx prisma generate &&
-      cd frontend && npm ci --include=dev && npm run build
-    # 起動時にマイグレーション適用 → seed（冪等・失敗しても起動は止めない）→ Next 起動。
-    startCommand: >-
-      npx prisma migrate deploy &&
-      (npx prisma db seed || echo "[seed skipped: set SEED_ADMIN_* env]") &&
-      cd frontend && npx next start -p $PORT
-    envVars:
-      - fromGroup: ess-shared
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ess-db
-          property: connectionString
-      - key: NODE_VERSION
-        value: "20"
-      # 初回デプロイ後に設定する実URL（手順参照）
-      - key: FLASK_API_BASE_URL   # ess-api の公開URL https://...onrender.com
-        sync: false
-      - key: NEXT_PUBLIC_SITE_URL # ess-web 自身の公開URL https://...onrender.com
-        sync: false
-      # 初期管理者（seed が使用）。実値はダッシュボードで設定（平文をリポジトリに残さない）。
-      - key: SEED_ADMIN_EMAIL
-        sync: false
-      - key: SEED_ADMIN_PASSWORD
-        sync: false
-      - key: SEED_ADMIN_NAME
-        value: "ESS Admin"

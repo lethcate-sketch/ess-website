@@ -164,3 +164,17 @@ def serialize_site_setting(s) -> dict:
     if s is None:
         return {"registrationEnabled": False, "updatedAt": None}
     return {"registrationEnabled": s.registrationEnabled, "updatedAt": iso(s.updatedAt)}
+
+
+def serialize_line_link_token(t, *, target_name: str | None = None) -> dict:
+    return {
+        "id": t.id,
+        "code": t.code,
+        "userId": t.userId,
+        "targetName": target_name,  # userId に対応するメンバー名（汎用コードは None）
+        "note": t.note,
+        "expiresAt": iso(t.expiresAt),
+        "usedAt": iso(t.usedAt),
+        "usedByLineUserId": t.usedByLineUserId,
+        "createdAt": iso(t.createdAt),
+    }

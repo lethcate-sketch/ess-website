@@ -49,3 +49,22 @@ export async function getAdminStats() {
     attendanceRate: totalAtt ? Math.round((presentAtt / totalAtt) * 1000) / 10 : null,
   };
 }
+
+/** LINE 招待コード一覧（新しい順）。userId 指定コードには宛先メンバー名(targetName)を解決して付与。 */
+export async function getLineLinkTokens() {
+  const tokens = await prisma.lineLinkToken.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+  const ids = [...new Set(tokens.filter((t) => t.userId).map((t) => t.userId as string))];
+  const users = ids.length
+    ? await prisma.user.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const nameById = new Map(users.map((u) => [u.id, u.name]));
+  return tokens.map((t) => ({
+    ...t,
+    targetName: t.userId ? nameById.get(t.userId) ?? null : null,
+  }));
+}

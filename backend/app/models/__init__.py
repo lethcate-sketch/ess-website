@@ -9,6 +9,7 @@ from .circle import CircleInfo, HomeContent, KeyMember
 from .event import Event
 from .form import ContactInquiry, ParticipationRequest
 from .image import SiteImage
+from .line import LineLinkToken
 from .settings import SiteSetting
 from .survey import EventSurveyQuestion, EventSurveyResponse
 from .user import RefreshToken, User
@@ -28,4 +29,5 @@ __all__ = [
     "KeyMember",
     "SiteSetting",
     "SiteImage",
+    "LineLinkToken",
 ]

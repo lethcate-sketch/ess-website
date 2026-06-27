@@ -16,6 +16,8 @@ class User(Base):
     name = Column("name", String, nullable=False)
     nameKana = Column("name_kana", String, nullable=True)
     role = Column("role", String, nullable=False, default="MEMBER")  # MEMBER | ADMIN
+    # LINE userId（友だち紐付け用）。未連携は null・連携済みは一意。Prisma @map("line_user_id")
+    lineUserId = Column("line_user_id", String, unique=True, nullable=True)
     grade = Column("grade", String, nullable=True)
     department = Column("department", String, nullable=True)
     bio = Column("bio", String, nullable=True)

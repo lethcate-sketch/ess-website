@@ -14,6 +14,9 @@ const nextConfig = {
   // クエリエンジンをバンドルせず実行時に require する。
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client", ".prisma/client"],
+    // monorepo 構成（Next は frontend/、Prisma Client はリポジトリルートの node_modules）。
+    // Vercel のサーバーレス関数に Prisma エンジンを確実に同梱するため、トレース起点をルートにする。
+    outputFileTracingRoot: resolve(__dirname, ".."),
   },
   // NEXT_PUBLIC_ のみクライアントへ公開（JWT_SECRET 等の機密は決して公開しない / §3-4）。
   env: {

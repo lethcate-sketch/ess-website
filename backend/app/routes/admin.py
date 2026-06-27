@@ -1,5 +1,7 @@
 """管理者ダッシュボード/メンバー管理（§6 /api/admin, すべて 👑）。"""
 import re
+import secrets
+from datetime import timedelta
 
 from flask import Blueprint, g, jsonify, request
 
@@ -8,14 +10,25 @@ from ..models import (
     Attendance,
     ContactInquiry,
     Event,
+    LineLinkToken,
     ParticipationRequest,
     SiteImage,
     SiteSetting,
     User,
 )
 from ..models.types import utcnow
-from ..schemas.admin import ImageUpdateIn, RoleUpdateIn, SettingsUpdateIn, StatusUpdateIn
-from ..schemas.serializers import serialize_site_setting, serialize_user
+from ..schemas.admin import (
+    ImageUpdateIn,
+    LineTokenCreateIn,
+    RoleUpdateIn,
+    SettingsUpdateIn,
+    StatusUpdateIn,
+)
+from ..schemas.serializers import (
+    serialize_line_link_token,
+    serialize_site_setting,
+    serialize_user,
+)
 from ..utils import error_response, validate
 from ..utils.auth import admin_required
 
@@ -198,4 +211,85 @@ def delete_image(key):
     if row is not None:
         SessionLocal.delete(row)
         SessionLocal.commit()
+    return jsonify({"ok": True})
+
+
+# ---------- LINE 招待コード（友だち紐付け用） ----------
+# 紛らわしい文字（I/O/0/1）を除いた英数字。コードは "ESS-XXXXXX"。
+_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def _gen_code() -> str:
+    return "ESS-" + "".join(secrets.choice(_CODE_ALPHABET) for _ in range(6))
+
+
+def _create_one_token(user_id, note, expires_at):
+    # まれな衝突に備え、未使用コードになるまで数回試行する。
+    code = _gen_code()
+    for _ in range(5):
+        if SessionLocal.query(LineLinkToken).filter_by(code=code).first() is None:
+            break
+        code = _gen_code()
+    t = LineLinkToken(code=code, userId=user_id, note=note, expiresAt=expires_at)
+    SessionLocal.add(t)
+    SessionLocal.flush()  # id を採番
+    return t
+
+
+def _token_target_names(tokens) -> dict:
+    """userId 指定トークンの宛先メンバー名 {userId: name} を一括取得。"""
+    ids = {t.userId for t in tokens if t.userId}
+    if not ids:
+        return {}
+    return {u.id: u.name for u in SessionLocal.query(User).filter(User.id.in_(ids)).all()}
+
+
+@bp.get("/line/tokens")
+@admin_required
+def list_line_tokens():
+    tokens = (
+        SessionLocal.query(LineLinkToken).order_by(LineLinkToken.createdAt.desc()).all()
+    )
+    names = _token_target_names(tokens)
+    return jsonify(
+        {"tokens": [serialize_line_link_token(t, target_name=names.get(t.userId)) for t in tokens]}
+    )
+
+
+@bp.post("/line/tokens")
+@admin_required
+def create_line_tokens():
+    data, err = validate(LineTokenCreateIn, request.get_json(silent=True) or {})
+    if err:
+        return err
+    expires_at = utcnow() + timedelta(days=data.expiresInDays) if data.expiresInDays else None
+
+    if data.kind == "member":
+        u = SessionLocal.query(User).filter_by(id=data.userId).first()
+        if u is None:
+            return error_response("NOT_FOUND", "メンバーが見つかりません。", 404)
+        created = [_create_one_token(u.id, data.note, expires_at)]
+    else:
+        created = [_create_one_token(None, data.note, expires_at) for _ in range(data.count)]
+
+    SessionLocal.commit()
+    names = _token_target_names(created)
+    return (
+        jsonify(
+            {"tokens": [serialize_line_link_token(t, target_name=names.get(t.userId)) for t in created]}
+        ),
+        201,
+    )
+
+
+@bp.delete("/line/tokens/<token_id>")
+@admin_required
+def delete_line_token(token_id):
+    t = SessionLocal.query(LineLinkToken).filter_by(id=token_id).first()
+    if t is None:
+        return jsonify({"ok": True})
+    if t.usedAt is not None:
+        return error_response("ALREADY_USED", "使用済みのコードは削除できません（履歴として保持）。", 409)
+    SessionLocal.delete(t)
+    SessionLocal.commit()
     return jsonify({"ok": True})
